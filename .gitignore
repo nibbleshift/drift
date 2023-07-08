@@ -21,7 +21,7 @@
 go.work
 .task
 driftd
-driftcl
+driftctl
 ent/
 !ent/schema/*.go
 generated.go
