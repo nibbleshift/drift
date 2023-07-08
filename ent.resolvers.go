@@ -27,6 +27,11 @@ func (r *queryResolver) Users(ctx context.Context, after *entgql.Cursor[int], fi
 	panic(fmt.Errorf("not implemented: Users - users"))
 }
 
+// Utters is the resolver for the utters field.
+func (r *queryResolver) Utters(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UtterWhereInput) (*ent.UtterConnection, error) {
+	panic(fmt.Errorf("not implemented: Utters - utters"))
+}
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
