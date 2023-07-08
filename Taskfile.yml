@@ -12,11 +12,13 @@ tasks:
       - go generate .
     sources:
       - ent/schema/*.go
+      - gqlgen.yml
   build-driftd:
     run: when_changed
     deps: [generate]
     sources:
       - cmd/driftd/*.go
+      - ent/*.go
     generates:
       - driftd
     cmds:
@@ -27,6 +29,7 @@ tasks:
     deps: [generate]
     sources:
       - cmd/driftctl/*.go
+      - ent/*.go
     generates:
       - driftctl
     cmds:
