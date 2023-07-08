@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: build 
+  build:
+    run: when_changed
+    cmds:
+      - yarn
+    sources:
+      - src/*
