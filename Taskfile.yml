@@ -1,0 +1,34 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: generate
+      - task: build-driftd
+      - task: build-driftctl
+  generate:
+    run: when_changed
+    cmds:
+      - go generate .
+    sources:
+      - ent/schema/*.go
+  build-driftd:
+    run: when_changed
+    deps: [generate]
+    sources:
+      - cmd/driftd/*.go
+    generates:
+      - driftd
+    cmds:
+      - go mod tidy
+      - go build -o driftd cmd/driftd/*.go 
+  build-driftctl:
+    run: when_changed
+    deps: [generate]
+    sources:
+      - cmd/driftctl/*.go
+    generates:
+      - driftctl
+    cmds:
+      - go mod tidy
+      - go build -o driftctl cmd/driftctl/*.go 
