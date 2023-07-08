@@ -4,14 +4,25 @@ tasks:
   default:
     cmds:
       - task: build 
-  build:
+  fetch:
     run: when_changed
     cmds:
       - yarn
+    sources:
+      - ./*.json
+      - ./*.js
+    generates:
+      - node_modules/*
+  build:
+    run: when_changed
+    deps: [fetch]
+    cmds:
+      - yarn build
     sources:
       - src/*
       - node_modules
   dev:
     run: always
+    deps: [fetch]
     cmds:
       - yarn dev
