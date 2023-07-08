@@ -19,3 +19,12 @@
 
 # Go workspace file
 go.work
+.task
+driftd
+driftcl
+ent/
+!ent/schema/*.go
+generated.go
+
+# ui
+ui/node_modules

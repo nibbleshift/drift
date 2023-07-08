@@ -10,3 +10,8 @@ tasks:
       - yarn
     sources:
       - src/*
+      - node_modules
+  dev:
+    run: always
+    cmds:
+      - yarn dev
