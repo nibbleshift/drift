@@ -19,6 +19,11 @@ sudo apt-get install -y nodejs
 sudo npm install --global yarn
 ```
 
+# Install Atlas
+```
+curl -sSf https://atlasgo.sh | sh
+```
+
 # Build 
 ```
 task
