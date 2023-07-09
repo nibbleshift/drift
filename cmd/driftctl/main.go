@@ -2,20 +2,32 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/icrowley/fake"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/nibbleshift/drift/ent"
 )
 
-func main() {
-	client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+// Open new connection
+func Open(databaseUrl string) *ent.Client {
+	db, err := sql.Open("pgx", databaseUrl)
 	if err != nil {
-		log.Fatalf("failed opening connection to sqlite: %v", err)
+		log.Fatal(err)
 	}
+
+	// Create an ent.Driver from `db`.
+	drv := entsql.OpenDB(dialect.Postgres, db)
+	return ent.NewClient(ent.Driver(drv))
+}
+
+func main() {
+	client := Open("postgresql://postgres:postgres@127.0.0.1/drift")
 	defer client.Close()
 	// Run the auto migration tool.
 	if err := client.Schema.Create(context.Background()); err != nil {
