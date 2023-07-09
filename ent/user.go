@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/nibbleshift/drift/ent/user"
+	"github.com/nibbleshift/drift/ent/userprofile"
 )
 
 // User is the model entity for the User schema.
@@ -24,30 +25,71 @@ type User struct {
 	LastName string `json:"last_name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges        UserEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges         UserEdges `json:"edges"`
+	post_mentions *int
+	user_profile  *int
+	selectValues  sql.SelectValues
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Utters holds the value of the utters edge.
-	Utters []*Utter `json:"utters,omitempty"`
+	// Posts holds the value of the posts edge.
+	Posts []*Post `json:"posts,omitempty"`
+	// Friends holds the value of the friends edge.
+	Friends []*User `json:"friends,omitempty"`
+	// Followers holds the value of the followers edge.
+	Followers []*User `json:"followers,omitempty"`
+	// Profile holds the value of the profile edge.
+	Profile *UserProfile `json:"profile,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [4]map[string]int
 
-	namedUtters map[string][]*Utter
+	namedPosts     map[string][]*Post
+	namedFriends   map[string][]*User
+	namedFollowers map[string][]*User
 }
 
-// UttersOrErr returns the Utters value or an error if the edge
+// PostsOrErr returns the Posts value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) UttersOrErr() ([]*Utter, error) {
+func (e UserEdges) PostsOrErr() ([]*Post, error) {
 	if e.loadedTypes[0] {
-		return e.Utters, nil
+		return e.Posts, nil
 	}
-	return nil, &NotLoadedError{edge: "utters"}
+	return nil, &NotLoadedError{edge: "posts"}
+}
+
+// FriendsOrErr returns the Friends value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) FriendsOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.Friends, nil
+	}
+	return nil, &NotLoadedError{edge: "friends"}
+}
+
+// FollowersOrErr returns the Followers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) FollowersOrErr() ([]*User, error) {
+	if e.loadedTypes[2] {
+		return e.Followers, nil
+	}
+	return nil, &NotLoadedError{edge: "followers"}
+}
+
+// ProfileOrErr returns the Profile value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) ProfileOrErr() (*UserProfile, error) {
+	if e.loadedTypes[3] {
+		if e.Profile == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: userprofile.Label}
+		}
+		return e.Profile, nil
+	}
+	return nil, &NotLoadedError{edge: "profile"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -59,6 +101,10 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case user.FieldUsername, user.FieldFirstName, user.FieldLastName:
 			values[i] = new(sql.NullString)
+		case user.ForeignKeys[0]: // post_mentions
+			values[i] = new(sql.NullInt64)
+		case user.ForeignKeys[1]: // user_profile
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -98,6 +144,20 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.LastName = value.String
 			}
+		case user.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field post_mentions", value)
+			} else if value.Valid {
+				u.post_mentions = new(int)
+				*u.post_mentions = int(value.Int64)
+			}
+		case user.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_profile", value)
+			} else if value.Valid {
+				u.user_profile = new(int)
+				*u.user_profile = int(value.Int64)
+			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
 		}
@@ -111,9 +171,24 @@ func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
 }
 
-// QueryUtters queries the "utters" edge of the User entity.
-func (u *User) QueryUtters() *UtterQuery {
-	return NewUserClient(u.config).QueryUtters(u)
+// QueryPosts queries the "posts" edge of the User entity.
+func (u *User) QueryPosts() *PostQuery {
+	return NewUserClient(u.config).QueryPosts(u)
+}
+
+// QueryFriends queries the "friends" edge of the User entity.
+func (u *User) QueryFriends() *UserQuery {
+	return NewUserClient(u.config).QueryFriends(u)
+}
+
+// QueryFollowers queries the "followers" edge of the User entity.
+func (u *User) QueryFollowers() *UserQuery {
+	return NewUserClient(u.config).QueryFollowers(u)
+}
+
+// QueryProfile queries the "profile" edge of the User entity.
+func (u *User) QueryProfile() *UserProfileQuery {
+	return NewUserClient(u.config).QueryProfile(u)
 }
 
 // Update returns a builder for updating this User.
@@ -151,27 +226,75 @@ func (u *User) String() string {
 	return builder.String()
 }
 
-// NamedUtters returns the Utters named value or an error if the edge was not
+// NamedPosts returns the Posts named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (u *User) NamedUtters(name string) ([]*Utter, error) {
-	if u.Edges.namedUtters == nil {
+func (u *User) NamedPosts(name string) ([]*Post, error) {
+	if u.Edges.namedPosts == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := u.Edges.namedUtters[name]
+	nodes, ok := u.Edges.namedPosts[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (u *User) appendNamedUtters(name string, edges ...*Utter) {
-	if u.Edges.namedUtters == nil {
-		u.Edges.namedUtters = make(map[string][]*Utter)
+func (u *User) appendNamedPosts(name string, edges ...*Post) {
+	if u.Edges.namedPosts == nil {
+		u.Edges.namedPosts = make(map[string][]*Post)
 	}
 	if len(edges) == 0 {
-		u.Edges.namedUtters[name] = []*Utter{}
+		u.Edges.namedPosts[name] = []*Post{}
 	} else {
-		u.Edges.namedUtters[name] = append(u.Edges.namedUtters[name], edges...)
+		u.Edges.namedPosts[name] = append(u.Edges.namedPosts[name], edges...)
+	}
+}
+
+// NamedFriends returns the Friends named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedFriends(name string) ([]*User, error) {
+	if u.Edges.namedFriends == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedFriends[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedFriends(name string, edges ...*User) {
+	if u.Edges.namedFriends == nil {
+		u.Edges.namedFriends = make(map[string][]*User)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedFriends[name] = []*User{}
+	} else {
+		u.Edges.namedFriends[name] = append(u.Edges.namedFriends[name], edges...)
+	}
+}
+
+// NamedFollowers returns the Followers named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedFollowers(name string) ([]*User, error) {
+	if u.Edges.namedFollowers == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedFollowers[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedFollowers(name string, edges ...*User) {
+	if u.Edges.namedFollowers == nil {
+		u.Edges.namedFollowers = make(map[string][]*User)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedFollowers[name] = []*User{}
+	} else {
+		u.Edges.namedFollowers[name] = append(u.Edges.namedFollowers[name], edges...)
 	}
 }
 

@@ -68,13 +68,13 @@ func main() {
 
 	for i := 0; i < 10; i++ {
 
-		utter, err := client.Utter.Create().SetData(fake.Sentence()).SetOwner(steve).Save(ctx)
+		utter, err := client.Post.Create().SetData(fake.Sentence()).SetOwner(steve).Save(ctx)
 
 		if err != nil {
 			log.Println(err)
 		}
 
-		steve.Update().AddUtters(utter).Save(ctx)
+		steve.Update().AddPosts(utter).Save(ctx)
 		spew.Dump(steve, corey, adam)
 
 	}
@@ -82,7 +82,7 @@ func main() {
 
 	users, err := client.User.
 		Query().
-		WithUtters().
+		WithPosts().
 		All(ctx)
 
 	if err != nil {
@@ -91,8 +91,8 @@ func main() {
 	spew.Dump(users)
 
 	for _, u := range users {
-		for _, p := range u.Edges.Utters {
-			fmt.Printf("%s: User(%v):%s -> Utter(%v): %s\n", p.CreatedAt.String(), u.ID, u.Username, p.ID, p.Data)
+		for _, p := range u.Edges.Posts {
+			fmt.Printf("%s: User(%v):%s -> Post(%v): %s\n", p.CreatedAt.String(), u.ID, u.Username, p.ID, p.Data)
 		}
 	}
 

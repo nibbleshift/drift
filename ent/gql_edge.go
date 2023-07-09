@@ -8,22 +8,114 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
-func (u *User) Utters(ctx context.Context) (result []*Utter, err error) {
+func (po *Post) Owner(ctx context.Context) (*User, error) {
+	result, err := po.Edges.OwnerOrErr()
+	if IsNotLoaded(err) {
+		result, err = po.QueryOwner().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (po *Post) Tags(ctx context.Context) (result []*Tag, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = u.NamedUtters(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = po.NamedTags(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = u.Edges.UttersOrErr()
+		result, err = po.Edges.TagsOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = u.QueryUtters().All(ctx)
+		result, err = po.QueryTags().All(ctx)
 	}
 	return result, err
 }
 
-func (u *Utter) Owner(ctx context.Context) (*User, error) {
-	result, err := u.Edges.OwnerOrErr()
+func (po *Post) Mentions(ctx context.Context) (result []*User, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = po.NamedMentions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = po.Edges.MentionsOrErr()
+	}
 	if IsNotLoaded(err) {
-		result, err = u.QueryOwner().Only(ctx)
+		result, err = po.QueryMentions().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) Posts(ctx context.Context) (result []*Post, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedPosts(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.PostsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QueryPosts().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) Friends(ctx context.Context) (result []*User, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedFriends(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.FriendsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QueryFriends().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) Followers(ctx context.Context) (result []*User, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedFollowers(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.FollowersOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QueryFollowers().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) Profile(ctx context.Context) (*UserProfile, error) {
+	result, err := u.Edges.ProfileOrErr()
+	if IsNotLoaded(err) {
+		result, err = u.QueryProfile().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (up *UserProfile) Links(ctx context.Context) (result []*Post, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = up.NamedLinks(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = up.Edges.LinksOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = up.QueryLinks().All(ctx)
+	}
+	return result, err
+}
+
+func (up *UserProfile) Emails(ctx context.Context) (result []*UserProfile, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = up.NamedEmails(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = up.Edges.EmailsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = up.QueryEmails().All(ctx)
+	}
+	return result, err
+}
+
+func (up *UserProfile) Followers(ctx context.Context) (result []*UserProfile, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = up.NamedFollowers(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = up.Edges.FollowersOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = up.QueryFollowers().All(ctx)
+	}
+	return result, err
 }

@@ -5,18 +5,32 @@ package ent
 import (
 	"time"
 
+	"github.com/nibbleshift/drift/ent/link"
+	"github.com/nibbleshift/drift/ent/post"
 	"github.com/nibbleshift/drift/ent/schema"
-	"github.com/nibbleshift/drift/ent/utter"
+	"github.com/nibbleshift/drift/ent/tag"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	utterFields := schema.Utter{}.Fields()
-	_ = utterFields
-	// utterDescCreatedAt is the schema descriptor for created_at field.
-	utterDescCreatedAt := utterFields[0].Descriptor()
-	// utter.DefaultCreatedAt holds the default value on creation for the created_at field.
-	utter.DefaultCreatedAt = utterDescCreatedAt.Default.(func() time.Time)
+	linkFields := schema.Link{}.Fields()
+	_ = linkFields
+	// linkDescCreatedAt is the schema descriptor for created_at field.
+	linkDescCreatedAt := linkFields[0].Descriptor()
+	// link.DefaultCreatedAt holds the default value on creation for the created_at field.
+	link.DefaultCreatedAt = linkDescCreatedAt.Default.(func() time.Time)
+	postFields := schema.Post{}.Fields()
+	_ = postFields
+	// postDescCreatedAt is the schema descriptor for created_at field.
+	postDescCreatedAt := postFields[0].Descriptor()
+	// post.DefaultCreatedAt holds the default value on creation for the created_at field.
+	post.DefaultCreatedAt = postDescCreatedAt.Default.(func() time.Time)
+	tagFields := schema.Tag{}.Fields()
+	_ = tagFields
+	// tagDescCreatedAt is the schema descriptor for created_at field.
+	tagDescCreatedAt := tagFields[0].Descriptor()
+	// tag.DefaultCreatedAt holds the default value on creation for the created_at field.
+	tag.DefaultCreatedAt = tagDescCreatedAt.Default.(func() time.Time)
 }

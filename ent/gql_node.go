@@ -14,8 +14,11 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
+	"github.com/nibbleshift/drift/ent/link"
+	"github.com/nibbleshift/drift/ent/post"
+	"github.com/nibbleshift/drift/ent/tag"
 	"github.com/nibbleshift/drift/ent/user"
-	"github.com/nibbleshift/drift/ent/utter"
+	"github.com/nibbleshift/drift/ent/userprofile"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -25,10 +28,19 @@ type Noder interface {
 }
 
 // IsNode implements the Node interface check for GQLGen.
+func (n *Link) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Post) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Tag) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
 func (n *User) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
-func (n *Utter) IsNode() {}
+func (n *UserProfile) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -88,6 +100,42 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 
 func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
 	switch table {
+	case link.Table:
+		query := c.Link.Query().
+			Where(link.ID(id))
+		query, err := query.CollectFields(ctx, "Link")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case post.Table:
+		query := c.Post.Query().
+			Where(post.ID(id))
+		query, err := query.CollectFields(ctx, "Post")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case tag.Table:
+		query := c.Tag.Query().
+			Where(tag.ID(id))
+		query, err := query.CollectFields(ctx, "Tag")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case user.Table:
 		query := c.User.Query().
 			Where(user.ID(id))
@@ -100,10 +148,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case utter.Table:
-		query := c.Utter.Query().
-			Where(utter.ID(id))
-		query, err := query.CollectFields(ctx, "Utter")
+	case userprofile.Table:
+		query := c.UserProfile.Query().
+			Where(userprofile.ID(id))
+		query, err := query.CollectFields(ctx, "UserProfile")
 		if err != nil {
 			return nil, err
 		}
@@ -185,6 +233,54 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case link.Table:
+		query := c.Link.Query().
+			Where(link.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Link")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case post.Table:
+		query := c.Post.Query().
+			Where(post.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Post")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case tag.Table:
+		query := c.Tag.Query().
+			Where(tag.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Tag")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case user.Table:
 		query := c.User.Query().
 			Where(user.IDIn(ids...))
@@ -201,10 +297,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case utter.Table:
-		query := c.Utter.Query().
-			Where(utter.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Utter")
+	case userprofile.Table:
+		query := c.UserProfile.Query().
+			Where(userprofile.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "UserProfile")
 		if err != nil {
 			return nil, err
 		}

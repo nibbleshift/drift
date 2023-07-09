@@ -25,7 +25,10 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("utters", Utter.Type),
+		edge.To("posts", Post.Type),
+		edge.To("friends", User.Type),
+		edge.To("followers", User.Type),
+		edge.To("profile", UserProfile.Type).Unique(),
 	}
 }
 

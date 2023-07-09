@@ -21,15 +21,33 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 	return r.client.Noders(ctx, ids)
 }
 
+// Links is the resolver for the links field.
+func (r *queryResolver) Links(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.LinkWhereInput) (*ent.LinkConnection, error) {
+	return r.client.Link.Query().
+		Paginate(ctx, after, first, before, last)
+}
+
+// Posts is the resolver for the posts field.
+func (r *queryResolver) Posts(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.PostWhereInput) (*ent.PostConnection, error) {
+	return r.client.Post.Query().
+		Paginate(ctx, after, first, before, last)
+}
+
+// Tags is the resolver for the tags field.
+func (r *queryResolver) Tags(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.TagWhereInput) (*ent.TagConnection, error) {
+	return r.client.Tag.Query().
+		Paginate(ctx, after, first, before, last)
+}
+
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserWhereInput) (*ent.UserConnection, error) {
 	return r.client.User.Query().
 		Paginate(ctx, after, first, before, last)
 }
 
-// Utters is the resolver for the utters field.
-func (r *queryResolver) Utters(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UtterWhereInput) (*ent.UtterConnection, error) {
-	return r.client.Utter.Query().
+// UserProfiles is the resolver for the userProfiles field.
+func (r *queryResolver) UserProfiles(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserProfileWhereInput) (*ent.UserProfileConnection, error) {
+	return r.client.UserProfile.Query().
 		Paginate(ctx, after, first, before, last)
 }
 

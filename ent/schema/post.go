@@ -10,30 +10,32 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// Utter holds the schema definition for the Utter entity.
-type Utter struct {
+// Post holds the schema definition for the Post entity.
+type Post struct {
 	ent.Schema
 }
 
-// Fields of the Utter.
-func (Utter) Fields() []ent.Field {
+// Fields of the Post.
+func (Post) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("created_at").Default(time.Now),
 		field.String("data"),
 	}
 }
 
-// Edges of the Utter.
-func (Utter) Edges() []ent.Edge {
+// Edges of the Post.
+func (Post) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("owner", User.Type).
-			Ref("utters").
+			Ref("posts").
 			Unique(),
+		edge.To("tags", Tag.Type),
+		edge.To("mentions", User.Type),
 	}
 }
 
-// Edges of the Utter.
-func (Utter) Annotations() []schema.Annotation {
+// Edges of the Post.
+func (Post) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.RelayConnection(),
 		entgql.QueryField(),

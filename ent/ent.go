@@ -12,8 +12,11 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/nibbleshift/drift/ent/link"
+	"github.com/nibbleshift/drift/ent/post"
+	"github.com/nibbleshift/drift/ent/tag"
 	"github.com/nibbleshift/drift/ent/user"
-	"github.com/nibbleshift/drift/ent/utter"
+	"github.com/nibbleshift/drift/ent/userprofile"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -74,8 +77,11 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			user.Table:  user.ValidColumn,
-			utter.Table: utter.ValidColumn,
+			link.Table:        link.ValidColumn,
+			post.Table:        post.ValidColumn,
+			tag.Table:         tag.ValidColumn,
+			user.Table:        user.ValidColumn,
+			userprofile.Table: userprofile.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)
