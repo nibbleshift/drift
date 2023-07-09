@@ -13,6 +13,7 @@ tasks:
       - go mod tidy
     sources:
       - ent/schema/*.go
+      - ent/entc.go
       - gqlgen.yml
   build-driftd:
     run: when_changed
