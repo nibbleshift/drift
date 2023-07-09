@@ -20,8 +20,9 @@ type Link struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Data holds the value of the "data" field.
-	Data         string `json:"data,omitempty"`
-	selectValues sql.SelectValues
+	Data               string `json:"data,omitempty"`
+	user_profile_links *int
+	selectValues       sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -35,6 +36,8 @@ func (*Link) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case link.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case link.ForeignKeys[0]: // user_profile_links
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -67,6 +70,13 @@ func (l *Link) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field data", values[i])
 			} else if value.Valid {
 				l.Data = value.String
+			}
+		case link.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_profile_links", value)
+			} else if value.Valid {
+				l.user_profile_links = new(int)
+				*l.user_profile_links = int(value.Int64)
 			}
 		default:
 			l.selectValues.Set(columns[i], values[i])

@@ -84,7 +84,7 @@ func (u *User) Profile(ctx context.Context) (*UserProfile, error) {
 	return result, MaskNotFound(err)
 }
 
-func (up *UserProfile) Links(ctx context.Context) (result []*Post, err error) {
+func (up *UserProfile) Links(ctx context.Context) (result []*Link, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = up.NamedLinks(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
@@ -92,30 +92,6 @@ func (up *UserProfile) Links(ctx context.Context) (result []*Post, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = up.QueryLinks().All(ctx)
-	}
-	return result, err
-}
-
-func (up *UserProfile) Emails(ctx context.Context) (result []*UserProfile, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = up.NamedEmails(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = up.Edges.EmailsOrErr()
-	}
-	if IsNotLoaded(err) {
-		result, err = up.QueryEmails().All(ctx)
-	}
-	return result, err
-}
-
-func (up *UserProfile) Followers(ctx context.Context) (result []*UserProfile, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = up.NamedFollowers(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = up.Edges.FollowersOrErr()
-	}
-	if IsNotLoaded(err) {
-		result, err = up.QueryFollowers().All(ctx)
 	}
 	return result, err
 }

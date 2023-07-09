@@ -140,14 +140,12 @@ type ComplexityRoot struct {
 	}
 
 	UserProfile struct {
-		About     func(childComplexity int) int
-		Avatar    func(childComplexity int) int
-		Dob       func(childComplexity int) int
-		Emails    func(childComplexity int) int
-		Followers func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Links     func(childComplexity int) int
-		Location  func(childComplexity int) int
+		About    func(childComplexity int) int
+		Avatar   func(childComplexity int) int
+		Dob      func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Links    func(childComplexity int) int
+		Location func(childComplexity int) int
 	}
 
 	UserProfileConnection struct {
@@ -599,20 +597,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.UserProfile.Dob(childComplexity), true
-
-	case "UserProfile.emails":
-		if e.complexity.UserProfile.Emails == nil {
-			break
-		}
-
-		return e.complexity.UserProfile.Emails(childComplexity), true
-
-	case "UserProfile.followers":
-		if e.complexity.UserProfile.Followers == nil {
-			break
-		}
-
-		return e.complexity.UserProfile.Followers(childComplexity), true
 
 	case "UserProfile.id":
 		if e.complexity.UserProfile.ID == nil {
@@ -3528,10 +3512,6 @@ func (ec *executionContext) fieldContext_User_profile(ctx context.Context, field
 				return ec.fieldContext_UserProfile_dob(ctx, field)
 			case "links":
 				return ec.fieldContext_UserProfile_links(ctx, field)
-			case "emails":
-				return ec.fieldContext_UserProfile_emails(ctx, field)
-			case "followers":
-				return ec.fieldContext_UserProfile_followers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserProfile", field.Name)
 		},
@@ -4030,9 +4010,9 @@ func (ec *executionContext) _UserProfile_links(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Post)
+	res := resTmp.([]*ent.Link)
 	fc.Result = res
-	return ec.marshalOPost2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostᚄ(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐLinkᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UserProfile_links(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4044,137 +4024,13 @@ func (ec *executionContext) fieldContext_UserProfile_links(ctx context.Context, 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Post_id(ctx, field)
+				return ec.fieldContext_Link_id(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_Post_createdAt(ctx, field)
+				return ec.fieldContext_Link_createdAt(ctx, field)
 			case "data":
-				return ec.fieldContext_Post_data(ctx, field)
-			case "owner":
-				return ec.fieldContext_Post_owner(ctx, field)
-			case "tags":
-				return ec.fieldContext_Post_tags(ctx, field)
-			case "mentions":
-				return ec.fieldContext_Post_mentions(ctx, field)
+				return ec.fieldContext_Link_data(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UserProfile_emails(ctx context.Context, field graphql.CollectedField, obj *ent.UserProfile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserProfile_emails(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Emails(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.UserProfile)
-	fc.Result = res
-	return ec.marshalOUserProfile2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfileᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserProfile_emails(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserProfile",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_UserProfile_id(ctx, field)
-			case "avatar":
-				return ec.fieldContext_UserProfile_avatar(ctx, field)
-			case "about":
-				return ec.fieldContext_UserProfile_about(ctx, field)
-			case "location":
-				return ec.fieldContext_UserProfile_location(ctx, field)
-			case "dob":
-				return ec.fieldContext_UserProfile_dob(ctx, field)
-			case "links":
-				return ec.fieldContext_UserProfile_links(ctx, field)
-			case "emails":
-				return ec.fieldContext_UserProfile_emails(ctx, field)
-			case "followers":
-				return ec.fieldContext_UserProfile_followers(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type UserProfile", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UserProfile_followers(ctx context.Context, field graphql.CollectedField, obj *ent.UserProfile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserProfile_followers(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Followers(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.UserProfile)
-	fc.Result = res
-	return ec.marshalOUserProfile2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfileᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserProfile_followers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserProfile",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_UserProfile_id(ctx, field)
-			case "avatar":
-				return ec.fieldContext_UserProfile_avatar(ctx, field)
-			case "about":
-				return ec.fieldContext_UserProfile_about(ctx, field)
-			case "location":
-				return ec.fieldContext_UserProfile_location(ctx, field)
-			case "dob":
-				return ec.fieldContext_UserProfile_dob(ctx, field)
-			case "links":
-				return ec.fieldContext_UserProfile_links(ctx, field)
-			case "emails":
-				return ec.fieldContext_UserProfile_emails(ctx, field)
-			case "followers":
-				return ec.fieldContext_UserProfile_followers(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type UserProfile", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Link", field.Name)
 		},
 	}
 	return fc, nil
@@ -4373,10 +4229,6 @@ func (ec *executionContext) fieldContext_UserProfileEdge_node(ctx context.Contex
 				return ec.fieldContext_UserProfile_dob(ctx, field)
 			case "links":
 				return ec.fieldContext_UserProfile_links(ctx, field)
-			case "emails":
-				return ec.fieldContext_UserProfile_emails(ctx, field)
-			case "followers":
-				return ec.fieldContext_UserProfile_followers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserProfile", field.Name)
 		},
@@ -6432,7 +6284,7 @@ func (ec *executionContext) unmarshalInputCreateUserProfileInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"avatar", "about", "location", "dob", "linkIDs", "emailIDs", "followerIDs"}
+	fieldsInOrder := [...]string{"avatar", "about", "location", "dob", "linkIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6484,24 +6336,6 @@ func (ec *executionContext) unmarshalInputCreateUserProfileInput(ctx context.Con
 				return it, err
 			}
 			it.LinkIDs = data
-		case "emailIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("emailIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.EmailIDs = data
-		case "followerIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("followerIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FollowerIDs = data
 		}
 	}
 
@@ -7493,7 +7327,7 @@ func (ec *executionContext) unmarshalInputUserProfileWhereInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "avatar", "avatarNEQ", "avatarIn", "avatarNotIn", "avatarGT", "avatarGTE", "avatarLT", "avatarLTE", "avatarContains", "avatarHasPrefix", "avatarHasSuffix", "avatarEqualFold", "avatarContainsFold", "about", "aboutNEQ", "aboutIn", "aboutNotIn", "aboutGT", "aboutGTE", "aboutLT", "aboutLTE", "aboutContains", "aboutHasPrefix", "aboutHasSuffix", "aboutEqualFold", "aboutContainsFold", "location", "locationNEQ", "locationIn", "locationNotIn", "locationGT", "locationGTE", "locationLT", "locationLTE", "locationContains", "locationHasPrefix", "locationHasSuffix", "locationEqualFold", "locationContainsFold", "dob", "dobNEQ", "dobIn", "dobNotIn", "dobGT", "dobGTE", "dobLT", "dobLTE", "hasLinks", "hasLinksWith", "hasEmails", "hasEmailsWith", "hasFollowers", "hasFollowersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "avatar", "avatarNEQ", "avatarIn", "avatarNotIn", "avatarGT", "avatarGTE", "avatarLT", "avatarLTE", "avatarContains", "avatarHasPrefix", "avatarHasSuffix", "avatarEqualFold", "avatarContainsFold", "about", "aboutNEQ", "aboutIn", "aboutNotIn", "aboutGT", "aboutGTE", "aboutLT", "aboutLTE", "aboutContains", "aboutHasPrefix", "aboutHasSuffix", "aboutEqualFold", "aboutContainsFold", "location", "locationNEQ", "locationIn", "locationNotIn", "locationGT", "locationGTE", "locationLT", "locationLTE", "locationContains", "locationHasPrefix", "locationHasSuffix", "locationEqualFold", "locationContainsFold", "dob", "dobNEQ", "dobIn", "dobNotIn", "dobGT", "dobGTE", "dobLT", "dobLTE", "hasLinks", "hasLinksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8035,47 +7869,11 @@ func (ec *executionContext) unmarshalInputUserProfileWhereInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasLinksWith"))
-			data, err := ec.unmarshalOPostWhereInput2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOLinkWhereInput2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐLinkWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.HasLinksWith = data
-		case "hasEmails":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasEmails"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasEmails = data
-		case "hasEmailsWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasEmailsWith"))
-			data, err := ec.unmarshalOUserProfileWhereInput2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfileWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasEmailsWith = data
-		case "hasFollowers":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFollowers"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasFollowers = data
-		case "hasFollowersWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFollowersWith"))
-			data, err := ec.unmarshalOUserProfileWhereInput2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfileWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasFollowersWith = data
 		}
 	}
 
@@ -9764,72 +9562,6 @@ func (ec *executionContext) _UserProfile(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "emails":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._UserProfile_emails(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "followers":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._UserProfile_followers(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10353,6 +10085,16 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) marshalNLink2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐLink(ctx context.Context, sel ast.SelectionSet, v *ent.Link) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Link(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNLinkConnection2githubᚗcomᚋnibbleshiftᚋdriftᚋentᚐLinkConnection(ctx context.Context, sel ast.SelectionSet, v ent.LinkConnection) graphql.Marshaler {
 	return ec._LinkConnection(ctx, sel, &v)
 }
@@ -10524,16 +10266,6 @@ func (ec *executionContext) marshalNUserConnection2ᚖgithubᚗcomᚋnibbleshift
 		return graphql.Null
 	}
 	return ec._UserConnection(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNUserProfile2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfile(ctx context.Context, sel ast.SelectionSet, v *ent.UserProfile) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._UserProfile(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUserProfileConnection2githubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfileConnection(ctx context.Context, sel ast.SelectionSet, v ent.UserProfileConnection) graphql.Marshaler {
@@ -10923,6 +10655,53 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOLink2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐLinkᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Link) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNLink2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐLink(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOLink2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐLink(ctx context.Context, sel ast.SelectionSet, v *ent.Link) graphql.Marshaler {
@@ -11483,53 +11262,6 @@ func (ec *executionContext) marshalOUserEdge2ᚖgithubᚗcomᚋnibbleshiftᚋdri
 		return graphql.Null
 	}
 	return ec._UserEdge(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOUserProfile2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfileᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.UserProfile) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNUserProfile2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfile(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalOUserProfile2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐUserProfile(ctx context.Context, sel ast.SelectionSet, v *ent.UserProfile) graphql.Marshaler {

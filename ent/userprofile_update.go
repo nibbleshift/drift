@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/nibbleshift/drift/ent/post"
+	"github.com/nibbleshift/drift/ent/link"
 	"github.com/nibbleshift/drift/ent/predicate"
 	"github.com/nibbleshift/drift/ent/userprofile"
 )
@@ -53,49 +53,19 @@ func (upu *UserProfileUpdate) SetDob(t time.Time) *UserProfileUpdate {
 	return upu
 }
 
-// AddLinkIDs adds the "links" edge to the Post entity by IDs.
+// AddLinkIDs adds the "links" edge to the Link entity by IDs.
 func (upu *UserProfileUpdate) AddLinkIDs(ids ...int) *UserProfileUpdate {
 	upu.mutation.AddLinkIDs(ids...)
 	return upu
 }
 
-// AddLinks adds the "links" edges to the Post entity.
-func (upu *UserProfileUpdate) AddLinks(p ...*Post) *UserProfileUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddLinks adds the "links" edges to the Link entity.
+func (upu *UserProfileUpdate) AddLinks(l ...*Link) *UserProfileUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
 	return upu.AddLinkIDs(ids...)
-}
-
-// AddEmailIDs adds the "emails" edge to the UserProfile entity by IDs.
-func (upu *UserProfileUpdate) AddEmailIDs(ids ...int) *UserProfileUpdate {
-	upu.mutation.AddEmailIDs(ids...)
-	return upu
-}
-
-// AddEmails adds the "emails" edges to the UserProfile entity.
-func (upu *UserProfileUpdate) AddEmails(u ...*UserProfile) *UserProfileUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upu.AddEmailIDs(ids...)
-}
-
-// AddFollowerIDs adds the "followers" edge to the UserProfile entity by IDs.
-func (upu *UserProfileUpdate) AddFollowerIDs(ids ...int) *UserProfileUpdate {
-	upu.mutation.AddFollowerIDs(ids...)
-	return upu
-}
-
-// AddFollowers adds the "followers" edges to the UserProfile entity.
-func (upu *UserProfileUpdate) AddFollowers(u ...*UserProfile) *UserProfileUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upu.AddFollowerIDs(ids...)
 }
 
 // Mutation returns the UserProfileMutation object of the builder.
@@ -103,67 +73,25 @@ func (upu *UserProfileUpdate) Mutation() *UserProfileMutation {
 	return upu.mutation
 }
 
-// ClearLinks clears all "links" edges to the Post entity.
+// ClearLinks clears all "links" edges to the Link entity.
 func (upu *UserProfileUpdate) ClearLinks() *UserProfileUpdate {
 	upu.mutation.ClearLinks()
 	return upu
 }
 
-// RemoveLinkIDs removes the "links" edge to Post entities by IDs.
+// RemoveLinkIDs removes the "links" edge to Link entities by IDs.
 func (upu *UserProfileUpdate) RemoveLinkIDs(ids ...int) *UserProfileUpdate {
 	upu.mutation.RemoveLinkIDs(ids...)
 	return upu
 }
 
-// RemoveLinks removes "links" edges to Post entities.
-func (upu *UserProfileUpdate) RemoveLinks(p ...*Post) *UserProfileUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// RemoveLinks removes "links" edges to Link entities.
+func (upu *UserProfileUpdate) RemoveLinks(l ...*Link) *UserProfileUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
 	return upu.RemoveLinkIDs(ids...)
-}
-
-// ClearEmails clears all "emails" edges to the UserProfile entity.
-func (upu *UserProfileUpdate) ClearEmails() *UserProfileUpdate {
-	upu.mutation.ClearEmails()
-	return upu
-}
-
-// RemoveEmailIDs removes the "emails" edge to UserProfile entities by IDs.
-func (upu *UserProfileUpdate) RemoveEmailIDs(ids ...int) *UserProfileUpdate {
-	upu.mutation.RemoveEmailIDs(ids...)
-	return upu
-}
-
-// RemoveEmails removes "emails" edges to UserProfile entities.
-func (upu *UserProfileUpdate) RemoveEmails(u ...*UserProfile) *UserProfileUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upu.RemoveEmailIDs(ids...)
-}
-
-// ClearFollowers clears all "followers" edges to the UserProfile entity.
-func (upu *UserProfileUpdate) ClearFollowers() *UserProfileUpdate {
-	upu.mutation.ClearFollowers()
-	return upu
-}
-
-// RemoveFollowerIDs removes the "followers" edge to UserProfile entities by IDs.
-func (upu *UserProfileUpdate) RemoveFollowerIDs(ids ...int) *UserProfileUpdate {
-	upu.mutation.RemoveFollowerIDs(ids...)
-	return upu
-}
-
-// RemoveFollowers removes "followers" edges to UserProfile entities.
-func (upu *UserProfileUpdate) RemoveFollowers(u ...*UserProfile) *UserProfileUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upu.RemoveFollowerIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -222,7 +150,7 @@ func (upu *UserProfileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{userprofile.LinksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(link.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -235,7 +163,7 @@ func (upu *UserProfileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{userprofile.LinksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(link.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -251,97 +179,7 @@ func (upu *UserProfileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{userprofile.LinksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if upu.mutation.EmailsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.EmailsTable,
-			Columns: userprofile.EmailsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upu.mutation.RemovedEmailsIDs(); len(nodes) > 0 && !upu.mutation.EmailsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.EmailsTable,
-			Columns: userprofile.EmailsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upu.mutation.EmailsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.EmailsTable,
-			Columns: userprofile.EmailsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if upu.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.FollowersTable,
-			Columns: userprofile.FollowersPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upu.mutation.RemovedFollowersIDs(); len(nodes) > 0 && !upu.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.FollowersTable,
-			Columns: userprofile.FollowersPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upu.mutation.FollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.FollowersTable,
-			Columns: userprofile.FollowersPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(link.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -393,49 +231,19 @@ func (upuo *UserProfileUpdateOne) SetDob(t time.Time) *UserProfileUpdateOne {
 	return upuo
 }
 
-// AddLinkIDs adds the "links" edge to the Post entity by IDs.
+// AddLinkIDs adds the "links" edge to the Link entity by IDs.
 func (upuo *UserProfileUpdateOne) AddLinkIDs(ids ...int) *UserProfileUpdateOne {
 	upuo.mutation.AddLinkIDs(ids...)
 	return upuo
 }
 
-// AddLinks adds the "links" edges to the Post entity.
-func (upuo *UserProfileUpdateOne) AddLinks(p ...*Post) *UserProfileUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddLinks adds the "links" edges to the Link entity.
+func (upuo *UserProfileUpdateOne) AddLinks(l ...*Link) *UserProfileUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
 	return upuo.AddLinkIDs(ids...)
-}
-
-// AddEmailIDs adds the "emails" edge to the UserProfile entity by IDs.
-func (upuo *UserProfileUpdateOne) AddEmailIDs(ids ...int) *UserProfileUpdateOne {
-	upuo.mutation.AddEmailIDs(ids...)
-	return upuo
-}
-
-// AddEmails adds the "emails" edges to the UserProfile entity.
-func (upuo *UserProfileUpdateOne) AddEmails(u ...*UserProfile) *UserProfileUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upuo.AddEmailIDs(ids...)
-}
-
-// AddFollowerIDs adds the "followers" edge to the UserProfile entity by IDs.
-func (upuo *UserProfileUpdateOne) AddFollowerIDs(ids ...int) *UserProfileUpdateOne {
-	upuo.mutation.AddFollowerIDs(ids...)
-	return upuo
-}
-
-// AddFollowers adds the "followers" edges to the UserProfile entity.
-func (upuo *UserProfileUpdateOne) AddFollowers(u ...*UserProfile) *UserProfileUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upuo.AddFollowerIDs(ids...)
 }
 
 // Mutation returns the UserProfileMutation object of the builder.
@@ -443,67 +251,25 @@ func (upuo *UserProfileUpdateOne) Mutation() *UserProfileMutation {
 	return upuo.mutation
 }
 
-// ClearLinks clears all "links" edges to the Post entity.
+// ClearLinks clears all "links" edges to the Link entity.
 func (upuo *UserProfileUpdateOne) ClearLinks() *UserProfileUpdateOne {
 	upuo.mutation.ClearLinks()
 	return upuo
 }
 
-// RemoveLinkIDs removes the "links" edge to Post entities by IDs.
+// RemoveLinkIDs removes the "links" edge to Link entities by IDs.
 func (upuo *UserProfileUpdateOne) RemoveLinkIDs(ids ...int) *UserProfileUpdateOne {
 	upuo.mutation.RemoveLinkIDs(ids...)
 	return upuo
 }
 
-// RemoveLinks removes "links" edges to Post entities.
-func (upuo *UserProfileUpdateOne) RemoveLinks(p ...*Post) *UserProfileUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// RemoveLinks removes "links" edges to Link entities.
+func (upuo *UserProfileUpdateOne) RemoveLinks(l ...*Link) *UserProfileUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
 	return upuo.RemoveLinkIDs(ids...)
-}
-
-// ClearEmails clears all "emails" edges to the UserProfile entity.
-func (upuo *UserProfileUpdateOne) ClearEmails() *UserProfileUpdateOne {
-	upuo.mutation.ClearEmails()
-	return upuo
-}
-
-// RemoveEmailIDs removes the "emails" edge to UserProfile entities by IDs.
-func (upuo *UserProfileUpdateOne) RemoveEmailIDs(ids ...int) *UserProfileUpdateOne {
-	upuo.mutation.RemoveEmailIDs(ids...)
-	return upuo
-}
-
-// RemoveEmails removes "emails" edges to UserProfile entities.
-func (upuo *UserProfileUpdateOne) RemoveEmails(u ...*UserProfile) *UserProfileUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upuo.RemoveEmailIDs(ids...)
-}
-
-// ClearFollowers clears all "followers" edges to the UserProfile entity.
-func (upuo *UserProfileUpdateOne) ClearFollowers() *UserProfileUpdateOne {
-	upuo.mutation.ClearFollowers()
-	return upuo
-}
-
-// RemoveFollowerIDs removes the "followers" edge to UserProfile entities by IDs.
-func (upuo *UserProfileUpdateOne) RemoveFollowerIDs(ids ...int) *UserProfileUpdateOne {
-	upuo.mutation.RemoveFollowerIDs(ids...)
-	return upuo
-}
-
-// RemoveFollowers removes "followers" edges to UserProfile entities.
-func (upuo *UserProfileUpdateOne) RemoveFollowers(u ...*UserProfile) *UserProfileUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upuo.RemoveFollowerIDs(ids...)
 }
 
 // Where appends a list predicates to the UserProfileUpdate builder.
@@ -592,7 +358,7 @@ func (upuo *UserProfileUpdateOne) sqlSave(ctx context.Context) (_node *UserProfi
 			Columns: []string{userprofile.LinksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(link.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -605,7 +371,7 @@ func (upuo *UserProfileUpdateOne) sqlSave(ctx context.Context) (_node *UserProfi
 			Columns: []string{userprofile.LinksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(link.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -621,97 +387,7 @@ func (upuo *UserProfileUpdateOne) sqlSave(ctx context.Context) (_node *UserProfi
 			Columns: []string{userprofile.LinksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if upuo.mutation.EmailsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.EmailsTable,
-			Columns: userprofile.EmailsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upuo.mutation.RemovedEmailsIDs(); len(nodes) > 0 && !upuo.mutation.EmailsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.EmailsTable,
-			Columns: userprofile.EmailsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upuo.mutation.EmailsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.EmailsTable,
-			Columns: userprofile.EmailsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if upuo.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.FollowersTable,
-			Columns: userprofile.FollowersPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upuo.mutation.RemovedFollowersIDs(); len(nodes) > 0 && !upuo.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.FollowersTable,
-			Columns: userprofile.FollowersPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := upuo.mutation.FollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.FollowersTable,
-			Columns: userprofile.FollowersPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(link.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

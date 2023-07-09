@@ -908,46 +908,14 @@ func (c *UserProfileClient) GetX(ctx context.Context, id int) *UserProfile {
 }
 
 // QueryLinks queries the links edge of a UserProfile.
-func (c *UserProfileClient) QueryLinks(up *UserProfile) *PostQuery {
-	query := (&PostClient{config: c.config}).Query()
+func (c *UserProfileClient) QueryLinks(up *UserProfile) *LinkQuery {
+	query := (&LinkClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := up.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(userprofile.Table, userprofile.FieldID, id),
-			sqlgraph.To(post.Table, post.FieldID),
+			sqlgraph.To(link.Table, link.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, userprofile.LinksTable, userprofile.LinksColumn),
-		)
-		fromV = sqlgraph.Neighbors(up.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEmails queries the emails edge of a UserProfile.
-func (c *UserProfileClient) QueryEmails(up *UserProfile) *UserProfileQuery {
-	query := (&UserProfileClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := up.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(userprofile.Table, userprofile.FieldID, id),
-			sqlgraph.To(userprofile.Table, userprofile.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, userprofile.EmailsTable, userprofile.EmailsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(up.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFollowers queries the followers edge of a UserProfile.
-func (c *UserProfileClient) QueryFollowers(up *UserProfile) *UserProfileQuery {
-	query := (&UserProfileClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := up.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(userprofile.Table, userprofile.FieldID, id),
-			sqlgraph.To(userprofile.Table, userprofile.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, userprofile.FollowersTable, userprofile.FollowersPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(up.driver.Dialect(), step)
 		return fromV, nil

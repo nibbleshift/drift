@@ -50,8 +50,6 @@ input CreateUserProfileInput {
   location: String!
   dob: Time!
   linkIDs: [ID!]
-  emailIDs: [ID!]
-  followerIDs: [ID!]
 }
 """
 Define a Relay Cursor type:
@@ -411,9 +409,7 @@ type UserProfile implements Node {
   about: String!
   location: String!
   dob: Time!
-  links: [Post!]
-  emails: [UserProfile!]
-  followers: [UserProfile!]
+  links: [Link!]
 }
 """A connection to a list of items."""
 type UserProfileConnection {
@@ -501,13 +497,7 @@ input UserProfileWhereInput {
   dobLTE: Time
   """links edge predicates"""
   hasLinks: Boolean
-  hasLinksWith: [PostWhereInput!]
-  """emails edge predicates"""
-  hasEmails: Boolean
-  hasEmailsWith: [UserProfileWhereInput!]
-  """followers edge predicates"""
-  hasFollowers: Boolean
-  hasFollowersWith: [UserProfileWhereInput!]
+  hasLinksWith: [LinkWhereInput!]
 }
 """
 UserWhereInput is used for filtering User objects.

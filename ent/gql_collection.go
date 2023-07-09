@@ -412,36 +412,12 @@ func (up *UserProfileQuery) collectField(ctx context.Context, opCtx *graphql.Ope
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&PostClient{config: up.config}).Query()
+				query = (&LinkClient{config: up.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			up.WithNamedLinks(alias, func(wq *PostQuery) {
-				*wq = *query
-			})
-		case "emails":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&UserProfileClient{config: up.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			up.WithNamedEmails(alias, func(wq *UserProfileQuery) {
-				*wq = *query
-			})
-		case "followers":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&UserProfileClient{config: up.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			up.WithNamedFollowers(alias, func(wq *UserProfileQuery) {
+			up.WithNamedLinks(alias, func(wq *LinkQuery) {
 				*wq = *query
 			})
 		case "avatar":

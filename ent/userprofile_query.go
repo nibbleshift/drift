@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/nibbleshift/drift/ent/post"
+	"github.com/nibbleshift/drift/ent/link"
 	"github.com/nibbleshift/drift/ent/predicate"
 	"github.com/nibbleshift/drift/ent/userprofile"
 )
@@ -19,18 +19,14 @@ import (
 // UserProfileQuery is the builder for querying UserProfile entities.
 type UserProfileQuery struct {
 	config
-	ctx                *QueryContext
-	order              []userprofile.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.UserProfile
-	withLinks          *PostQuery
-	withEmails         *UserProfileQuery
-	withFollowers      *UserProfileQuery
-	modifiers          []func(*sql.Selector)
-	loadTotal          []func(context.Context, []*UserProfile) error
-	withNamedLinks     map[string]*PostQuery
-	withNamedEmails    map[string]*UserProfileQuery
-	withNamedFollowers map[string]*UserProfileQuery
+	ctx            *QueryContext
+	order          []userprofile.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.UserProfile
+	withLinks      *LinkQuery
+	modifiers      []func(*sql.Selector)
+	loadTotal      []func(context.Context, []*UserProfile) error
+	withNamedLinks map[string]*LinkQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -68,8 +64,8 @@ func (upq *UserProfileQuery) Order(o ...userprofile.OrderOption) *UserProfileQue
 }
 
 // QueryLinks chains the current query on the "links" edge.
-func (upq *UserProfileQuery) QueryLinks() *PostQuery {
-	query := (&PostClient{config: upq.config}).Query()
+func (upq *UserProfileQuery) QueryLinks() *LinkQuery {
+	query := (&LinkClient{config: upq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := upq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -80,52 +76,8 @@ func (upq *UserProfileQuery) QueryLinks() *PostQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(userprofile.Table, userprofile.FieldID, selector),
-			sqlgraph.To(post.Table, post.FieldID),
+			sqlgraph.To(link.Table, link.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, userprofile.LinksTable, userprofile.LinksColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(upq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryEmails chains the current query on the "emails" edge.
-func (upq *UserProfileQuery) QueryEmails() *UserProfileQuery {
-	query := (&UserProfileClient{config: upq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := upq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := upq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(userprofile.Table, userprofile.FieldID, selector),
-			sqlgraph.To(userprofile.Table, userprofile.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, userprofile.EmailsTable, userprofile.EmailsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(upq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFollowers chains the current query on the "followers" edge.
-func (upq *UserProfileQuery) QueryFollowers() *UserProfileQuery {
-	query := (&UserProfileClient{config: upq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := upq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := upq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(userprofile.Table, userprofile.FieldID, selector),
-			sqlgraph.To(userprofile.Table, userprofile.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, userprofile.FollowersTable, userprofile.FollowersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(upq.driver.Dialect(), step)
 		return fromU, nil
@@ -320,14 +272,12 @@ func (upq *UserProfileQuery) Clone() *UserProfileQuery {
 		return nil
 	}
 	return &UserProfileQuery{
-		config:        upq.config,
-		ctx:           upq.ctx.Clone(),
-		order:         append([]userprofile.OrderOption{}, upq.order...),
-		inters:        append([]Interceptor{}, upq.inters...),
-		predicates:    append([]predicate.UserProfile{}, upq.predicates...),
-		withLinks:     upq.withLinks.Clone(),
-		withEmails:    upq.withEmails.Clone(),
-		withFollowers: upq.withFollowers.Clone(),
+		config:     upq.config,
+		ctx:        upq.ctx.Clone(),
+		order:      append([]userprofile.OrderOption{}, upq.order...),
+		inters:     append([]Interceptor{}, upq.inters...),
+		predicates: append([]predicate.UserProfile{}, upq.predicates...),
+		withLinks:  upq.withLinks.Clone(),
 		// clone intermediate query.
 		sql:  upq.sql.Clone(),
 		path: upq.path,
@@ -336,34 +286,12 @@ func (upq *UserProfileQuery) Clone() *UserProfileQuery {
 
 // WithLinks tells the query-builder to eager-load the nodes that are connected to
 // the "links" edge. The optional arguments are used to configure the query builder of the edge.
-func (upq *UserProfileQuery) WithLinks(opts ...func(*PostQuery)) *UserProfileQuery {
-	query := (&PostClient{config: upq.config}).Query()
+func (upq *UserProfileQuery) WithLinks(opts ...func(*LinkQuery)) *UserProfileQuery {
+	query := (&LinkClient{config: upq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
 	upq.withLinks = query
-	return upq
-}
-
-// WithEmails tells the query-builder to eager-load the nodes that are connected to
-// the "emails" edge. The optional arguments are used to configure the query builder of the edge.
-func (upq *UserProfileQuery) WithEmails(opts ...func(*UserProfileQuery)) *UserProfileQuery {
-	query := (&UserProfileClient{config: upq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	upq.withEmails = query
-	return upq
-}
-
-// WithFollowers tells the query-builder to eager-load the nodes that are connected to
-// the "followers" edge. The optional arguments are used to configure the query builder of the edge.
-func (upq *UserProfileQuery) WithFollowers(opts ...func(*UserProfileQuery)) *UserProfileQuery {
-	query := (&UserProfileClient{config: upq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	upq.withFollowers = query
 	return upq
 }
 
@@ -445,10 +373,8 @@ func (upq *UserProfileQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*UserProfile{}
 		_spec       = upq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [1]bool{
 			upq.withLinks != nil,
-			upq.withEmails != nil,
-			upq.withFollowers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -474,43 +400,15 @@ func (upq *UserProfileQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	}
 	if query := upq.withLinks; query != nil {
 		if err := upq.loadLinks(ctx, query, nodes,
-			func(n *UserProfile) { n.Edges.Links = []*Post{} },
-			func(n *UserProfile, e *Post) { n.Edges.Links = append(n.Edges.Links, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := upq.withEmails; query != nil {
-		if err := upq.loadEmails(ctx, query, nodes,
-			func(n *UserProfile) { n.Edges.Emails = []*UserProfile{} },
-			func(n *UserProfile, e *UserProfile) { n.Edges.Emails = append(n.Edges.Emails, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := upq.withFollowers; query != nil {
-		if err := upq.loadFollowers(ctx, query, nodes,
-			func(n *UserProfile) { n.Edges.Followers = []*UserProfile{} },
-			func(n *UserProfile, e *UserProfile) { n.Edges.Followers = append(n.Edges.Followers, e) }); err != nil {
+			func(n *UserProfile) { n.Edges.Links = []*Link{} },
+			func(n *UserProfile, e *Link) { n.Edges.Links = append(n.Edges.Links, e) }); err != nil {
 			return nil, err
 		}
 	}
 	for name, query := range upq.withNamedLinks {
 		if err := upq.loadLinks(ctx, query, nodes,
 			func(n *UserProfile) { n.appendNamedLinks(name) },
-			func(n *UserProfile, e *Post) { n.appendNamedLinks(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range upq.withNamedEmails {
-		if err := upq.loadEmails(ctx, query, nodes,
-			func(n *UserProfile) { n.appendNamedEmails(name) },
-			func(n *UserProfile, e *UserProfile) { n.appendNamedEmails(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range upq.withNamedFollowers {
-		if err := upq.loadFollowers(ctx, query, nodes,
-			func(n *UserProfile) { n.appendNamedFollowers(name) },
-			func(n *UserProfile, e *UserProfile) { n.appendNamedFollowers(name, e) }); err != nil {
+			func(n *UserProfile, e *Link) { n.appendNamedLinks(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -522,7 +420,7 @@ func (upq *UserProfileQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	return nodes, nil
 }
 
-func (upq *UserProfileQuery) loadLinks(ctx context.Context, query *PostQuery, nodes []*UserProfile, init func(*UserProfile), assign func(*UserProfile, *Post)) error {
+func (upq *UserProfileQuery) loadLinks(ctx context.Context, query *LinkQuery, nodes []*UserProfile, init func(*UserProfile), assign func(*UserProfile, *Link)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*UserProfile)
 	for i := range nodes {
@@ -533,7 +431,7 @@ func (upq *UserProfileQuery) loadLinks(ctx context.Context, query *PostQuery, no
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.Post(func(s *sql.Selector) {
+	query.Where(predicate.Link(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(userprofile.LinksColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
@@ -550,128 +448,6 @@ func (upq *UserProfileQuery) loadLinks(ctx context.Context, query *PostQuery, no
 			return fmt.Errorf(`unexpected referenced foreign-key "user_profile_links" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
-	}
-	return nil
-}
-func (upq *UserProfileQuery) loadEmails(ctx context.Context, query *UserProfileQuery, nodes []*UserProfile, init func(*UserProfile), assign func(*UserProfile, *UserProfile)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*UserProfile)
-	nids := make(map[int]map[*UserProfile]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(userprofile.EmailsTable)
-		s.Join(joinT).On(s.C(userprofile.FieldID), joinT.C(userprofile.EmailsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(userprofile.EmailsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(userprofile.EmailsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := int(values[0].(*sql.NullInt64).Int64)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*UserProfile]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*UserProfile](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "emails" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (upq *UserProfileQuery) loadFollowers(ctx context.Context, query *UserProfileQuery, nodes []*UserProfile, init func(*UserProfile), assign func(*UserProfile, *UserProfile)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*UserProfile)
-	nids := make(map[int]map[*UserProfile]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(userprofile.FollowersTable)
-		s.Join(joinT).On(s.C(userprofile.FieldID), joinT.C(userprofile.FollowersPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(userprofile.FollowersPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(userprofile.FollowersPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := int(values[0].(*sql.NullInt64).Int64)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*UserProfile]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*UserProfile](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "followers" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
 	}
 	return nil
 }
@@ -762,43 +538,15 @@ func (upq *UserProfileQuery) sqlQuery(ctx context.Context) *sql.Selector {
 
 // WithNamedLinks tells the query-builder to eager-load the nodes that are connected to the "links"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (upq *UserProfileQuery) WithNamedLinks(name string, opts ...func(*PostQuery)) *UserProfileQuery {
-	query := (&PostClient{config: upq.config}).Query()
+func (upq *UserProfileQuery) WithNamedLinks(name string, opts ...func(*LinkQuery)) *UserProfileQuery {
+	query := (&LinkClient{config: upq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
 	if upq.withNamedLinks == nil {
-		upq.withNamedLinks = make(map[string]*PostQuery)
+		upq.withNamedLinks = make(map[string]*LinkQuery)
 	}
 	upq.withNamedLinks[name] = query
-	return upq
-}
-
-// WithNamedEmails tells the query-builder to eager-load the nodes that are connected to the "emails"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (upq *UserProfileQuery) WithNamedEmails(name string, opts ...func(*UserProfileQuery)) *UserProfileQuery {
-	query := (&UserProfileClient{config: upq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if upq.withNamedEmails == nil {
-		upq.withNamedEmails = make(map[string]*UserProfileQuery)
-	}
-	upq.withNamedEmails[name] = query
-	return upq
-}
-
-// WithNamedFollowers tells the query-builder to eager-load the nodes that are connected to the "followers"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (upq *UserProfileQuery) WithNamedFollowers(name string, opts ...func(*UserProfileQuery)) *UserProfileQuery {
-	query := (&UserProfileClient{config: upq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if upq.withNamedFollowers == nil {
-		upq.withNamedFollowers = make(map[string]*UserProfileQuery)
-	}
-	upq.withNamedFollowers[name] = query
 	return upq
 }
 

@@ -34,47 +34,23 @@ type UserProfile struct {
 // UserProfileEdges holds the relations/edges for other nodes in the graph.
 type UserProfileEdges struct {
 	// Links holds the value of the links edge.
-	Links []*Post `json:"links,omitempty"`
-	// Emails holds the value of the emails edge.
-	Emails []*UserProfile `json:"emails,omitempty"`
-	// Followers holds the value of the followers edge.
-	Followers []*UserProfile `json:"followers,omitempty"`
+	Links []*Link `json:"links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [1]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [1]map[string]int
 
-	namedLinks     map[string][]*Post
-	namedEmails    map[string][]*UserProfile
-	namedFollowers map[string][]*UserProfile
+	namedLinks map[string][]*Link
 }
 
 // LinksOrErr returns the Links value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserProfileEdges) LinksOrErr() ([]*Post, error) {
+func (e UserProfileEdges) LinksOrErr() ([]*Link, error) {
 	if e.loadedTypes[0] {
 		return e.Links, nil
 	}
 	return nil, &NotLoadedError{edge: "links"}
-}
-
-// EmailsOrErr returns the Emails value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserProfileEdges) EmailsOrErr() ([]*UserProfile, error) {
-	if e.loadedTypes[1] {
-		return e.Emails, nil
-	}
-	return nil, &NotLoadedError{edge: "emails"}
-}
-
-// FollowersOrErr returns the Followers value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserProfileEdges) FollowersOrErr() ([]*UserProfile, error) {
-	if e.loadedTypes[2] {
-		return e.Followers, nil
-	}
-	return nil, &NotLoadedError{edge: "followers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -147,18 +123,8 @@ func (up *UserProfile) Value(name string) (ent.Value, error) {
 }
 
 // QueryLinks queries the "links" edge of the UserProfile entity.
-func (up *UserProfile) QueryLinks() *PostQuery {
+func (up *UserProfile) QueryLinks() *LinkQuery {
 	return NewUserProfileClient(up.config).QueryLinks(up)
-}
-
-// QueryEmails queries the "emails" edge of the UserProfile entity.
-func (up *UserProfile) QueryEmails() *UserProfileQuery {
-	return NewUserProfileClient(up.config).QueryEmails(up)
-}
-
-// QueryFollowers queries the "followers" edge of the UserProfile entity.
-func (up *UserProfile) QueryFollowers() *UserProfileQuery {
-	return NewUserProfileClient(up.config).QueryFollowers(up)
 }
 
 // Update returns a builder for updating this UserProfile.
@@ -201,7 +167,7 @@ func (up *UserProfile) String() string {
 
 // NamedLinks returns the Links named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (up *UserProfile) NamedLinks(name string) ([]*Post, error) {
+func (up *UserProfile) NamedLinks(name string) ([]*Link, error) {
 	if up.Edges.namedLinks == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
@@ -212,62 +178,14 @@ func (up *UserProfile) NamedLinks(name string) ([]*Post, error) {
 	return nodes, nil
 }
 
-func (up *UserProfile) appendNamedLinks(name string, edges ...*Post) {
+func (up *UserProfile) appendNamedLinks(name string, edges ...*Link) {
 	if up.Edges.namedLinks == nil {
-		up.Edges.namedLinks = make(map[string][]*Post)
+		up.Edges.namedLinks = make(map[string][]*Link)
 	}
 	if len(edges) == 0 {
-		up.Edges.namedLinks[name] = []*Post{}
+		up.Edges.namedLinks[name] = []*Link{}
 	} else {
 		up.Edges.namedLinks[name] = append(up.Edges.namedLinks[name], edges...)
-	}
-}
-
-// NamedEmails returns the Emails named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (up *UserProfile) NamedEmails(name string) ([]*UserProfile, error) {
-	if up.Edges.namedEmails == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := up.Edges.namedEmails[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (up *UserProfile) appendNamedEmails(name string, edges ...*UserProfile) {
-	if up.Edges.namedEmails == nil {
-		up.Edges.namedEmails = make(map[string][]*UserProfile)
-	}
-	if len(edges) == 0 {
-		up.Edges.namedEmails[name] = []*UserProfile{}
-	} else {
-		up.Edges.namedEmails[name] = append(up.Edges.namedEmails[name], edges...)
-	}
-}
-
-// NamedFollowers returns the Followers named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (up *UserProfile) NamedFollowers(name string) ([]*UserProfile, error) {
-	if up.Edges.namedFollowers == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := up.Edges.namedFollowers[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (up *UserProfile) appendNamedFollowers(name string, edges ...*UserProfile) {
-	if up.Edges.namedFollowers == nil {
-		up.Edges.namedFollowers = make(map[string][]*UserProfile)
-	}
-	if len(edges) == 0 {
-		up.Edges.namedFollowers[name] = []*UserProfile{}
-	} else {
-		up.Edges.namedFollowers[name] = append(up.Edges.namedFollowers[name], edges...)
 	}
 }
 

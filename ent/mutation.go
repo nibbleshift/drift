@@ -2165,26 +2165,20 @@ func (m *UserMutation) ResetEdge(name string) error {
 // UserProfileMutation represents an operation that mutates the UserProfile nodes in the graph.
 type UserProfileMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *int
-	avatar           *string
-	about            *string
-	location         *string
-	dob              *time.Time
-	clearedFields    map[string]struct{}
-	links            map[int]struct{}
-	removedlinks     map[int]struct{}
-	clearedlinks     bool
-	emails           map[int]struct{}
-	removedemails    map[int]struct{}
-	clearedemails    bool
-	followers        map[int]struct{}
-	removedfollowers map[int]struct{}
-	clearedfollowers bool
-	done             bool
-	oldValue         func(context.Context) (*UserProfile, error)
-	predicates       []predicate.UserProfile
+	op            Op
+	typ           string
+	id            *int
+	avatar        *string
+	about         *string
+	location      *string
+	dob           *time.Time
+	clearedFields map[string]struct{}
+	links         map[int]struct{}
+	removedlinks  map[int]struct{}
+	clearedlinks  bool
+	done          bool
+	oldValue      func(context.Context) (*UserProfile, error)
+	predicates    []predicate.UserProfile
 }
 
 var _ ent.Mutation = (*UserProfileMutation)(nil)
@@ -2429,7 +2423,7 @@ func (m *UserProfileMutation) ResetDob() {
 	m.dob = nil
 }
 
-// AddLinkIDs adds the "links" edge to the Post entity by ids.
+// AddLinkIDs adds the "links" edge to the Link entity by ids.
 func (m *UserProfileMutation) AddLinkIDs(ids ...int) {
 	if m.links == nil {
 		m.links = make(map[int]struct{})
@@ -2439,17 +2433,17 @@ func (m *UserProfileMutation) AddLinkIDs(ids ...int) {
 	}
 }
 
-// ClearLinks clears the "links" edge to the Post entity.
+// ClearLinks clears the "links" edge to the Link entity.
 func (m *UserProfileMutation) ClearLinks() {
 	m.clearedlinks = true
 }
 
-// LinksCleared reports if the "links" edge to the Post entity was cleared.
+// LinksCleared reports if the "links" edge to the Link entity was cleared.
 func (m *UserProfileMutation) LinksCleared() bool {
 	return m.clearedlinks
 }
 
-// RemoveLinkIDs removes the "links" edge to the Post entity by IDs.
+// RemoveLinkIDs removes the "links" edge to the Link entity by IDs.
 func (m *UserProfileMutation) RemoveLinkIDs(ids ...int) {
 	if m.removedlinks == nil {
 		m.removedlinks = make(map[int]struct{})
@@ -2460,7 +2454,7 @@ func (m *UserProfileMutation) RemoveLinkIDs(ids ...int) {
 	}
 }
 
-// RemovedLinks returns the removed IDs of the "links" edge to the Post entity.
+// RemovedLinks returns the removed IDs of the "links" edge to the Link entity.
 func (m *UserProfileMutation) RemovedLinksIDs() (ids []int) {
 	for id := range m.removedlinks {
 		ids = append(ids, id)
@@ -2481,114 +2475,6 @@ func (m *UserProfileMutation) ResetLinks() {
 	m.links = nil
 	m.clearedlinks = false
 	m.removedlinks = nil
-}
-
-// AddEmailIDs adds the "emails" edge to the UserProfile entity by ids.
-func (m *UserProfileMutation) AddEmailIDs(ids ...int) {
-	if m.emails == nil {
-		m.emails = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.emails[ids[i]] = struct{}{}
-	}
-}
-
-// ClearEmails clears the "emails" edge to the UserProfile entity.
-func (m *UserProfileMutation) ClearEmails() {
-	m.clearedemails = true
-}
-
-// EmailsCleared reports if the "emails" edge to the UserProfile entity was cleared.
-func (m *UserProfileMutation) EmailsCleared() bool {
-	return m.clearedemails
-}
-
-// RemoveEmailIDs removes the "emails" edge to the UserProfile entity by IDs.
-func (m *UserProfileMutation) RemoveEmailIDs(ids ...int) {
-	if m.removedemails == nil {
-		m.removedemails = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.emails, ids[i])
-		m.removedemails[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedEmails returns the removed IDs of the "emails" edge to the UserProfile entity.
-func (m *UserProfileMutation) RemovedEmailsIDs() (ids []int) {
-	for id := range m.removedemails {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// EmailsIDs returns the "emails" edge IDs in the mutation.
-func (m *UserProfileMutation) EmailsIDs() (ids []int) {
-	for id := range m.emails {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetEmails resets all changes to the "emails" edge.
-func (m *UserProfileMutation) ResetEmails() {
-	m.emails = nil
-	m.clearedemails = false
-	m.removedemails = nil
-}
-
-// AddFollowerIDs adds the "followers" edge to the UserProfile entity by ids.
-func (m *UserProfileMutation) AddFollowerIDs(ids ...int) {
-	if m.followers == nil {
-		m.followers = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.followers[ids[i]] = struct{}{}
-	}
-}
-
-// ClearFollowers clears the "followers" edge to the UserProfile entity.
-func (m *UserProfileMutation) ClearFollowers() {
-	m.clearedfollowers = true
-}
-
-// FollowersCleared reports if the "followers" edge to the UserProfile entity was cleared.
-func (m *UserProfileMutation) FollowersCleared() bool {
-	return m.clearedfollowers
-}
-
-// RemoveFollowerIDs removes the "followers" edge to the UserProfile entity by IDs.
-func (m *UserProfileMutation) RemoveFollowerIDs(ids ...int) {
-	if m.removedfollowers == nil {
-		m.removedfollowers = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.followers, ids[i])
-		m.removedfollowers[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFollowers returns the removed IDs of the "followers" edge to the UserProfile entity.
-func (m *UserProfileMutation) RemovedFollowersIDs() (ids []int) {
-	for id := range m.removedfollowers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// FollowersIDs returns the "followers" edge IDs in the mutation.
-func (m *UserProfileMutation) FollowersIDs() (ids []int) {
-	for id := range m.followers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetFollowers resets all changes to the "followers" edge.
-func (m *UserProfileMutation) ResetFollowers() {
-	m.followers = nil
-	m.clearedfollowers = false
-	m.removedfollowers = nil
 }
 
 // Where appends a list predicates to the UserProfileMutation builder.
@@ -2775,15 +2661,9 @@ func (m *UserProfileMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserProfileMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 1)
 	if m.links != nil {
 		edges = append(edges, userprofile.EdgeLinks)
-	}
-	if m.emails != nil {
-		edges = append(edges, userprofile.EdgeEmails)
-	}
-	if m.followers != nil {
-		edges = append(edges, userprofile.EdgeFollowers)
 	}
 	return edges
 }
@@ -2798,33 +2678,15 @@ func (m *UserProfileMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case userprofile.EdgeEmails:
-		ids := make([]ent.Value, 0, len(m.emails))
-		for id := range m.emails {
-			ids = append(ids, id)
-		}
-		return ids
-	case userprofile.EdgeFollowers:
-		ids := make([]ent.Value, 0, len(m.followers))
-		for id := range m.followers {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserProfileMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 1)
 	if m.removedlinks != nil {
 		edges = append(edges, userprofile.EdgeLinks)
-	}
-	if m.removedemails != nil {
-		edges = append(edges, userprofile.EdgeEmails)
-	}
-	if m.removedfollowers != nil {
-		edges = append(edges, userprofile.EdgeFollowers)
 	}
 	return edges
 }
@@ -2839,33 +2701,15 @@ func (m *UserProfileMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case userprofile.EdgeEmails:
-		ids := make([]ent.Value, 0, len(m.removedemails))
-		for id := range m.removedemails {
-			ids = append(ids, id)
-		}
-		return ids
-	case userprofile.EdgeFollowers:
-		ids := make([]ent.Value, 0, len(m.removedfollowers))
-		for id := range m.removedfollowers {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserProfileMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 1)
 	if m.clearedlinks {
 		edges = append(edges, userprofile.EdgeLinks)
-	}
-	if m.clearedemails {
-		edges = append(edges, userprofile.EdgeEmails)
-	}
-	if m.clearedfollowers {
-		edges = append(edges, userprofile.EdgeFollowers)
 	}
 	return edges
 }
@@ -2876,10 +2720,6 @@ func (m *UserProfileMutation) EdgeCleared(name string) bool {
 	switch name {
 	case userprofile.EdgeLinks:
 		return m.clearedlinks
-	case userprofile.EdgeEmails:
-		return m.clearedemails
-	case userprofile.EdgeFollowers:
-		return m.clearedfollowers
 	}
 	return false
 }
@@ -2898,12 +2738,6 @@ func (m *UserProfileMutation) ResetEdge(name string) error {
 	switch name {
 	case userprofile.EdgeLinks:
 		m.ResetLinks()
-		return nil
-	case userprofile.EdgeEmails:
-		m.ResetEmails()
-		return nil
-	case userprofile.EdgeFollowers:
-		m.ResetFollowers()
 		return nil
 	}
 	return fmt.Errorf("unknown UserProfile edge %s", name)

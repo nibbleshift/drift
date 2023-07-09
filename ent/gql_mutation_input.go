@@ -116,13 +116,11 @@ func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 
 // CreateUserProfileInput represents a mutation input for creating userprofiles.
 type CreateUserProfileInput struct {
-	Avatar      string
-	About       string
-	Location    string
-	Dob         time.Time
-	LinkIDs     []int
-	EmailIDs    []int
-	FollowerIDs []int
+	Avatar   string
+	About    string
+	Location string
+	Dob      time.Time
+	LinkIDs  []int
 }
 
 // Mutate applies the CreateUserProfileInput on the UserProfileMutation builder.
@@ -133,12 +131,6 @@ func (i *CreateUserProfileInput) Mutate(m *UserProfileMutation) {
 	m.SetDob(i.Dob)
 	if v := i.LinkIDs; len(v) > 0 {
 		m.AddLinkIDs(v...)
-	}
-	if v := i.EmailIDs; len(v) > 0 {
-		m.AddEmailIDs(v...)
-	}
-	if v := i.FollowerIDs; len(v) > 0 {
-		m.AddFollowerIDs(v...)
 	}
 }
 

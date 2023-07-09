@@ -26,9 +26,7 @@ func (UserProfile) Fields() []ent.Field {
 // Edges of the UserProfile.
 func (UserProfile) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("links", Post.Type),
-		edge.To("emails", UserProfile.Type),
-		edge.To("followers", UserProfile.Type),
+		edge.To("links", Link.Type),
 	}
 }
 

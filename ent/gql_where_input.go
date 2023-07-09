@@ -1165,15 +1165,7 @@ type UserProfileWhereInput struct {
 
 	// "links" edge predicates.
 	HasLinks     *bool             `json:"hasLinks,omitempty"`
-	HasLinksWith []*PostWhereInput `json:"hasLinksWith,omitempty"`
-
-	// "emails" edge predicates.
-	HasEmails     *bool                    `json:"hasEmails,omitempty"`
-	HasEmailsWith []*UserProfileWhereInput `json:"hasEmailsWith,omitempty"`
-
-	// "followers" edge predicates.
-	HasFollowers     *bool                    `json:"hasFollowers,omitempty"`
-	HasFollowersWith []*UserProfileWhereInput `json:"hasFollowersWith,omitempty"`
+	HasLinksWith []*LinkWhereInput `json:"hasLinksWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1421,7 +1413,7 @@ func (i *UserProfileWhereInput) P() (predicate.UserProfile, error) {
 		predicates = append(predicates, p)
 	}
 	if len(i.HasLinksWith) > 0 {
-		with := make([]predicate.Post, 0, len(i.HasLinksWith))
+		with := make([]predicate.Link, 0, len(i.HasLinksWith))
 		for _, w := range i.HasLinksWith {
 			p, err := w.P()
 			if err != nil {
@@ -1430,42 +1422,6 @@ func (i *UserProfileWhereInput) P() (predicate.UserProfile, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, userprofile.HasLinksWith(with...))
-	}
-	if i.HasEmails != nil {
-		p := userprofile.HasEmails()
-		if !*i.HasEmails {
-			p = userprofile.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasEmailsWith) > 0 {
-		with := make([]predicate.UserProfile, 0, len(i.HasEmailsWith))
-		for _, w := range i.HasEmailsWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasEmailsWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, userprofile.HasEmailsWith(with...))
-	}
-	if i.HasFollowers != nil {
-		p := userprofile.HasFollowers()
-		if !*i.HasFollowers {
-			p = userprofile.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasFollowersWith) > 0 {
-		with := make([]predicate.UserProfile, 0, len(i.HasFollowersWith))
-		for _, w := range i.HasFollowersWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasFollowersWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, userprofile.HasFollowersWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

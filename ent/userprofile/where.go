@@ -322,55 +322,9 @@ func HasLinks() predicate.UserProfile {
 }
 
 // HasLinksWith applies the HasEdge predicate on the "links" edge with a given conditions (other predicates).
-func HasLinksWith(preds ...predicate.Post) predicate.UserProfile {
+func HasLinksWith(preds ...predicate.Link) predicate.UserProfile {
 	return predicate.UserProfile(func(s *sql.Selector) {
 		step := newLinksStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasEmails applies the HasEdge predicate on the "emails" edge.
-func HasEmails() predicate.UserProfile {
-	return predicate.UserProfile(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, EmailsTable, EmailsPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasEmailsWith applies the HasEdge predicate on the "emails" edge with a given conditions (other predicates).
-func HasEmailsWith(preds ...predicate.UserProfile) predicate.UserProfile {
-	return predicate.UserProfile(func(s *sql.Selector) {
-		step := newEmailsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasFollowers applies the HasEdge predicate on the "followers" edge.
-func HasFollowers() predicate.UserProfile {
-	return predicate.UserProfile(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, FollowersTable, FollowersPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasFollowersWith applies the HasEdge predicate on the "followers" edge with a given conditions (other predicates).
-func HasFollowersWith(preds ...predicate.UserProfile) predicate.UserProfile {
-	return predicate.UserProfile(func(s *sql.Selector) {
-		step := newFollowersStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

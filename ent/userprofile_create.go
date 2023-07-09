@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/nibbleshift/drift/ent/post"
+	"github.com/nibbleshift/drift/ent/link"
 	"github.com/nibbleshift/drift/ent/userprofile"
 )
 
@@ -45,49 +45,19 @@ func (upc *UserProfileCreate) SetDob(t time.Time) *UserProfileCreate {
 	return upc
 }
 
-// AddLinkIDs adds the "links" edge to the Post entity by IDs.
+// AddLinkIDs adds the "links" edge to the Link entity by IDs.
 func (upc *UserProfileCreate) AddLinkIDs(ids ...int) *UserProfileCreate {
 	upc.mutation.AddLinkIDs(ids...)
 	return upc
 }
 
-// AddLinks adds the "links" edges to the Post entity.
-func (upc *UserProfileCreate) AddLinks(p ...*Post) *UserProfileCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddLinks adds the "links" edges to the Link entity.
+func (upc *UserProfileCreate) AddLinks(l ...*Link) *UserProfileCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
 	return upc.AddLinkIDs(ids...)
-}
-
-// AddEmailIDs adds the "emails" edge to the UserProfile entity by IDs.
-func (upc *UserProfileCreate) AddEmailIDs(ids ...int) *UserProfileCreate {
-	upc.mutation.AddEmailIDs(ids...)
-	return upc
-}
-
-// AddEmails adds the "emails" edges to the UserProfile entity.
-func (upc *UserProfileCreate) AddEmails(u ...*UserProfile) *UserProfileCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upc.AddEmailIDs(ids...)
-}
-
-// AddFollowerIDs adds the "followers" edge to the UserProfile entity by IDs.
-func (upc *UserProfileCreate) AddFollowerIDs(ids ...int) *UserProfileCreate {
-	upc.mutation.AddFollowerIDs(ids...)
-	return upc
-}
-
-// AddFollowers adds the "followers" edges to the UserProfile entity.
-func (upc *UserProfileCreate) AddFollowers(u ...*UserProfile) *UserProfileCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return upc.AddFollowerIDs(ids...)
 }
 
 // Mutation returns the UserProfileMutation object of the builder.
@@ -186,39 +156,7 @@ func (upc *UserProfileCreate) createSpec() (*UserProfile, *sqlgraph.CreateSpec) 
 			Columns: []string{userprofile.LinksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := upc.mutation.EmailsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.EmailsTable,
-			Columns: userprofile.EmailsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := upc.mutation.FollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   userprofile.FollowersTable,
-			Columns: userprofile.FollowersPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(link.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

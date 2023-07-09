@@ -21,6 +21,7 @@ type LinkQuery struct {
 	order      []link.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Link
+	withFKs    bool
 	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Link) error
 	// intermediate query (i.e. traversal path).
@@ -333,9 +334,13 @@ func (lq *LinkQuery) prepareQuery(ctx context.Context) error {
 
 func (lq *LinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Link, error) {
 	var (
-		nodes = []*Link{}
-		_spec = lq.querySpec()
+		nodes   = []*Link{}
+		withFKs = lq.withFKs
+		_spec   = lq.querySpec()
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, link.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Link).scanValues(nil, columns)
 	}

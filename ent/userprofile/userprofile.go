@@ -22,23 +22,15 @@ const (
 	FieldDob = "dob"
 	// EdgeLinks holds the string denoting the links edge name in mutations.
 	EdgeLinks = "links"
-	// EdgeEmails holds the string denoting the emails edge name in mutations.
-	EdgeEmails = "emails"
-	// EdgeFollowers holds the string denoting the followers edge name in mutations.
-	EdgeFollowers = "followers"
 	// Table holds the table name of the userprofile in the database.
 	Table = "user_profiles"
 	// LinksTable is the table that holds the links relation/edge.
-	LinksTable = "posts"
-	// LinksInverseTable is the table name for the Post entity.
-	// It exists in this package in order to avoid circular dependency with the "post" package.
-	LinksInverseTable = "posts"
+	LinksTable = "links"
+	// LinksInverseTable is the table name for the Link entity.
+	// It exists in this package in order to avoid circular dependency with the "link" package.
+	LinksInverseTable = "links"
 	// LinksColumn is the table column denoting the links relation/edge.
 	LinksColumn = "user_profile_links"
-	// EmailsTable is the table that holds the emails relation/edge. The primary key declared below.
-	EmailsTable = "user_profile_emails"
-	// FollowersTable is the table that holds the followers relation/edge. The primary key declared below.
-	FollowersTable = "user_profile_followers"
 )
 
 // Columns holds all SQL columns for userprofile fields.
@@ -49,15 +41,6 @@ var Columns = []string{
 	FieldLocation,
 	FieldDob,
 }
-
-var (
-	// EmailsPrimaryKey and EmailsColumn2 are the table columns denoting the
-	// primary key for the emails relation (M2M).
-	EmailsPrimaryKey = []string{"user_profile_id", "email_id"}
-	// FollowersPrimaryKey and FollowersColumn2 are the table columns denoting the
-	// primary key for the followers relation (M2M).
-	FollowersPrimaryKey = []string{"user_profile_id", "follower_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -110,52 +93,10 @@ func ByLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByEmailsCount orders the results by emails count.
-func ByEmailsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEmailsStep(), opts...)
-	}
-}
-
-// ByEmails orders the results by emails terms.
-func ByEmails(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEmailsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByFollowersCount orders the results by followers count.
-func ByFollowersCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFollowersStep(), opts...)
-	}
-}
-
-// ByFollowers orders the results by followers terms.
-func ByFollowers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFollowersStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newLinksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LinksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LinksTable, LinksColumn),
-	)
-}
-func newEmailsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, EmailsTable, EmailsPrimaryKey...),
-	)
-}
-func newFollowersStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, FollowersTable, FollowersPrimaryKey...),
 	)
 }
