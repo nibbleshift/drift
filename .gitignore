@@ -22,9 +22,6 @@ go.work
 .task
 driftd
 driftctl
-ent/
-!ent/schema/*.go
-generated.go
 
 # ui
 ui/node_modules
