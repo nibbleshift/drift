@@ -24,19 +24,13 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserWhereInput) (*ent.UserConnection, error) {
 	return r.client.User.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithUserOrder(orderBy),
-			ent.WithUserwhere(where),
-		)
+		Paginate(ctx, after, first, before, last)
 }
 
 // Utters is the resolver for the utters field.
 func (r *queryResolver) Utters(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UtterWhereInput) (*ent.UtterConnection, error) {
 	return r.client.Utter.Query().
-		Paginate(ctx, after, first, before, last,
-			ent.WithUtterOrder(orderBy),
-			ent.WithUtterwhere(where),
-		)
+		Paginate(ctx, after, first, before, last)
 }
 
 // Query returns QueryResolver implementation.
