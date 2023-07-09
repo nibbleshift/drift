@@ -23,3 +23,8 @@ sudo npm install --global yarn
 ```
 task
 ```
+
+# Start postgres
+```
+docker run -p5432:5432 --name drift-postgres -e POSTGRES_PASSWORD=postgres -d postgres
+```
