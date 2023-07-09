@@ -10,6 +10,7 @@ tasks:
     run: when_changed
     cmds:
       - go generate .
+      - go mod tidy
     sources:
       - ent/schema/*.go
       - gqlgen.yml
@@ -19,10 +20,10 @@ tasks:
     sources:
       - cmd/driftd/*.go
       - ent/*.go
+      - ./*.go
     generates:
       - driftd
     cmds:
-      - go mod tidy
       - go build -o driftd cmd/driftd/*.go 
   build-driftctl:
     run: when_changed
@@ -30,8 +31,8 @@ tasks:
     sources:
       - cmd/driftctl/*.go
       - ent/*.go
+      - ./*.go
     generates:
       - driftctl
     cmds:
-      - go mod tidy
       - go build -o driftctl cmd/driftctl/*.go 

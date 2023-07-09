@@ -6,7 +6,6 @@ package drift
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/contrib/entgql"
 	"github.com/nibbleshift/drift/ent"
@@ -14,22 +13,30 @@ import (
 
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
-	panic(fmt.Errorf("not implemented: Node - node"))
+	return r.client.Noder(ctx, id)
 }
 
 // Nodes is the resolver for the nodes field.
 func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, error) {
-	panic(fmt.Errorf("not implemented: Nodes - nodes"))
+	return r.client.Noders(ctx, ids)
 }
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserWhereInput) (*ent.UserConnection, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	return r.client.User.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithUserOrder(orderBy),
+			ent.WithUserwhere(where),
+		)
 }
 
 // Utters is the resolver for the utters field.
 func (r *queryResolver) Utters(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UtterWhereInput) (*ent.UtterConnection, error) {
-	panic(fmt.Errorf("not implemented: Utters - utters"))
+	return r.client.Utter.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithUtterOrder(orderBy),
+			ent.WithUtterwhere(where),
+		)
 }
 
 // Query returns QueryResolver implementation.
