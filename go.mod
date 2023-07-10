@@ -7,9 +7,11 @@ require (
 	entgo.io/ent v0.12.3
 	github.com/99designs/gqlgen v0.17.34
 	github.com/davecgh/go-spew v1.1.1
+	github.com/go-chi/chi v1.5.4
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/jackc/pgx/v5 v5.4.1
+	github.com/rs/cors v1.9.0
 	github.com/vektah/gqlparser/v2 v2.5.6
 	golang.org/x/sync v0.3.0
 )

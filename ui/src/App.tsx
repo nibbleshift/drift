@@ -12,6 +12,56 @@ import {
   useMantineTheme,
 } from '@mantine/core';
 
+import { useQuery, gql } from '@apollo/client';
+
+const GET_USERS = gql`
+query GetUsers {
+  users {
+    edges {
+      node {
+        id
+        username
+        firstName
+        lastName
+        posts {
+	  createdAt
+          data
+        }
+      }
+    }
+  }
+}
+`;
+
+const GET_POSTS = gql`
+query GetPosts {
+  posts {
+    edges {
+      node {
+        id
+        data
+        owner {
+          username
+        }
+      }
+    }
+  }
+}
+`;
+
+function DisplayPosts() {
+  const { loading, error, data } = useQuery(GET_POSTS);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error : {error.message}</p>;
+
+  return data.posts.edges.map(({ node }) => (
+    <div key={node.id}>
+      <h3>{node.owner.username}: {node.data}</h3>
+    </div>
+  ));
+}
+
 export default function App() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
@@ -61,6 +111,7 @@ export default function App() {
       }
     >
       <Text>Resize app to see responsive navbar in action</Text>
+      <DisplayPosts />
     </AppShell>
     </MantineProvider>
   );

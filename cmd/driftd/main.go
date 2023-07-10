@@ -12,9 +12,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/go-chi/chi"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/nibbleshift/drift"
 	"github.com/nibbleshift/drift/ent"
+	"github.com/rs/cors"
 )
 
 const defaultPort = "8080"
@@ -45,14 +47,25 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
+
+	router := chi.NewRouter()
+
+	// Add CORS middleware around every request
+	// See https://github.com/rs/cors for full option listing
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowCredentials: true,
+		Debug:            true,
+	}).Handler)
+
 	srv := handler.NewDefaultServer(drift.NewSchema(client))
 	//srv := handler.NewDefaultServer(drift.NewExecutableSchema(drift.Config{Resolvers: &drift.Resolver{}}))
 
 	srv.AddTransport(&transport.Websocket{}) // <---- This is the important part!
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
