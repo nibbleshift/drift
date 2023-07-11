@@ -7,8 +7,13 @@ import {
   Footer,
   Aside,
   Text,
+  Group,
+  Badge,
+  Card,
   MediaQuery,
   Burger,
+  List,
+  Stack,
   useMantineTheme,
 } from '@mantine/core';
 
@@ -55,11 +60,25 @@ function DisplayPosts() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
-  return data.posts.edges.map(({ node }) => (
-    <div key={node.id}>
-      <h3>{node.owner.username}: {node.data}</h3>
-    </div>
+   var cards = data.posts.edges.map(({ node }) => (
+    <Card shadow="sm" padding="xs" radius="xs" withBorder key={node.id}>
+      <Group position="apart" mt="xs" mb="xs">
+        <Text weight={500}>{node.owner.username}</Text>
+        <Badge color="green" variant="light">
+          Verified
+        </Badge>
+      </Group>
+      <Text size="sm" color="dimmed">
+        {node.data}
+      </Text>
+    </Card>
+    
   ));
+  var items = cards.map((item) => (
+    <div key={item}>{item}</div>
+  ));
+
+  return <Stack spacing="xs">{items}</Stack>;
 }
 
 export default function App() {
@@ -77,7 +96,7 @@ export default function App() {
       asideOffsetBreakpoint="sm"
       navbar={
         <Navbar p="md" hiddenBreakpoint="sm" hidden={!opened} width={{ sm: 200, lg: 300 }}>
-          <Text>Application navbar</Text>
+          <Navbar.Section>Test</Navbar.Section>
         </Navbar>
       }
       aside={
@@ -105,12 +124,11 @@ export default function App() {
               />
             </MediaQuery>
 
-            <Text>Application header</Text>
+            <Text>DriftSocial</Text>
           </div>
         </Header>
       }
     >
-      <Text>Resize app to see responsive navbar in action</Text>
       <DisplayPosts />
     </AppShell>
     </MantineProvider>
