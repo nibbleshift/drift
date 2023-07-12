@@ -19,11 +19,15 @@
     "@mantine/hooks": "^6.0.16",
     "@mantine/notifications": "^6.0.16",
     "@mantine/nprogress": "^6.0.16",
+    "@tabler/icons-react": "^2.24.0",
     "dayjs": "^1.11.9",
     "embla-carousel-react": "^8.0.0-rc08",
     "graphql": "^16.7.1",
+    "javascript-time-ago": "^2.5.9",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-time-ago": "^7.2.1",
+    "tabler-icons-react": "^1.56.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.14",

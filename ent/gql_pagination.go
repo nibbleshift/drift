@@ -5,6 +5,9 @@ package ent
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
+	"strconv"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
@@ -548,6 +551,53 @@ func (po *PostQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// PostOrderFieldCreatedAt orders Post by created_at.
+	PostOrderFieldCreatedAt = &PostOrderField{
+		Value: func(po *Post) (ent.Value, error) {
+			return po.CreatedAt, nil
+		},
+		column: post.FieldCreatedAt,
+		toTerm: post.ByCreatedAt,
+		toCursor: func(po *Post) Cursor {
+			return Cursor{
+				ID:    po.ID,
+				Value: po.CreatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f PostOrderField) String() string {
+	var str string
+	switch f.column {
+	case PostOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f PostOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *PostOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("PostOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *PostOrderFieldCreatedAt
+	default:
+		return fmt.Errorf("%s is not a valid PostOrderField", str)
+	}
+	return nil
 }
 
 // PostOrderField defines the ordering field of Post.

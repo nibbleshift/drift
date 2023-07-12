@@ -94,7 +94,7 @@ type ComplexityRoot struct {
 		Links        func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.LinkWhereInput) int
 		Node         func(childComplexity int, id int) int
 		Nodes        func(childComplexity int, ids []int) int
-		Posts        func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.PostWhereInput) int
+		Posts        func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PostOrder, where *ent.PostWhereInput) int
 		Tags         func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.TagWhereInput) int
 		UserProfiles func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserProfileWhereInput) int
 		Users        func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserWhereInput) int
@@ -164,7 +164,7 @@ type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
 	Links(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.LinkWhereInput) (*ent.LinkConnection, error)
-	Posts(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.PostWhereInput) (*ent.PostConnection, error)
+	Posts(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PostOrder, where *ent.PostWhereInput) (*ent.PostConnection, error)
 	Tags(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.TagWhereInput) (*ent.TagConnection, error)
 	Users(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserWhereInput) (*ent.UserConnection, error)
 	UserProfiles(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.UserProfileWhereInput) (*ent.UserProfileConnection, error)
@@ -392,7 +392,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Posts(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["where"].(*ent.PostWhereInput)), true
+		return e.complexity.Query.Posts(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.PostOrder), args["where"].(*ent.PostWhereInput)), true
 
 	case "Query.tags":
 		if e.complexity.Query.Tags == nil {
@@ -668,6 +668,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateUserInput,
 		ec.unmarshalInputCreateUserProfileInput,
 		ec.unmarshalInputLinkWhereInput,
+		ec.unmarshalInputPostOrder,
 		ec.unmarshalInputPostWhereInput,
 		ec.unmarshalInputTagWhereInput,
 		ec.unmarshalInputUserProfileWhereInput,
@@ -908,15 +909,24 @@ func (ec *executionContext) field_Query_posts_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["last"] = arg3
-	var arg4 *ent.PostWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg4, err = ec.unmarshalOPostWhereInput2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostWhereInput(ctx, tmp)
+	var arg4 *ent.PostOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOPostOrder2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostOrder(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["where"] = arg4
+	args["orderBy"] = arg4
+	var arg5 *ent.PostWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOPostWhereInput2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
 	return args, nil
 }
 
@@ -2378,7 +2388,7 @@ func (ec *executionContext) _Query_posts(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Posts(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["where"].(*ent.PostWhereInput))
+		return ec.resolvers.Query().Posts(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.PostOrder), fc.Args["where"].(*ent.PostWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6650,6 +6660,48 @@ func (ec *executionContext) unmarshalInputLinkWhereInput(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPostOrder(ctx context.Context, obj interface{}) (ent.PostOrder, error) {
+	var it ent.PostOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNPostOrderField2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPostWhereInput(ctx context.Context, obj interface{}) (ent.PostWhereInput, error) {
 	var it ent.PostWhereInput
 	asMap := map[string]interface{}{}
@@ -10152,6 +10204,16 @@ func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋnibbleshiftᚋdrift�
 	return ret
 }
 
+func (ec *executionContext) unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx context.Context, v interface{}) (entgql.OrderDirection, error) {
+	var res entgql.OrderDirection
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx context.Context, sel ast.SelectionSet, v entgql.OrderDirection) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[int]) graphql.Marshaler {
 	return ec._PageInfo(ctx, sel, &v)
 }
@@ -10178,6 +10240,22 @@ func (ec *executionContext) marshalNPostConnection2ᚖgithubᚗcomᚋnibbleshift
 		return graphql.Null
 	}
 	return ec._PostConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPostOrderField2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostOrderField(ctx context.Context, v interface{}) (*ent.PostOrderField, error) {
+	var res = new(ent.PostOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPostOrderField2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.PostOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalNPostWhereInput2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostWhereInput(ctx context.Context, v interface{}) (*ent.PostWhereInput, error) {
@@ -10894,6 +10972,14 @@ func (ec *executionContext) marshalOPostEdge2ᚖgithubᚗcomᚋnibbleshiftᚋdri
 		return graphql.Null
 	}
 	return ec._PostEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPostOrder2ᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostOrder(ctx context.Context, v interface{}) (*ent.PostOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPostOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOPostWhereInput2ᚕᚖgithubᚗcomᚋnibbleshiftᚋdriftᚋentᚐPostWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.PostWhereInput, error) {
