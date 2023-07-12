@@ -7,6 +7,7 @@ import {
   Footer,
   Aside,
   Text,
+  TextInput,
   Group,
   Badge,
   Card,
@@ -221,14 +222,8 @@ export default function App() {
       aside={
         <MediaQuery smallerThan="sm" styles={{ display: 'none' }}>
           <Aside p="md" hiddenBreakpoint="sm" width={{ sm: 200, lg: 300 }}>
-            <Text>Application sidebar</Text>
           </Aside>
         </MediaQuery>
-      }
-      footer={
-        <Footer height={60} p="md">
-          Application footer
-        </Footer>
       }
       header={
         <Header height={{ base: 50, md: 70 }} p="md">
@@ -242,12 +237,16 @@ export default function App() {
                 mr="xl"
               />
             </MediaQuery>
-
             <Text>DriftSocial</Text>
           </div>
         </Header>
       }
     >
+    <TextInput
+      radius="md"
+      size="md"
+      placeholder="What's on your mind?"
+    />
       <DisplayPosts />
     </AppShell>
     </MantineProvider>
