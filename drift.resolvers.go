@@ -6,14 +6,13 @@ package drift
 
 import (
 	"context"
-	"log"
 
 	"github.com/nibbleshift/drift/ent"
 )
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input ent.CreatePostInput) (*ent.Post, error) {
-	log.Println("not implemented: CreatePost - createPost")
+	return r.client.Post.Create().SetInput(input).Save(ctx)
 }
 
 // Mutation returns MutationResolver implementation.
