@@ -40,7 +40,7 @@ import {
 import { LinksGroup } from './NavbarLinksGroup';
 import { Logo } from './Logo';
 import { UserButton } from './UserButton';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, useMutation, gql } from '@apollo/client';
 
 const GET_USERS = gql`
 query GetUsers {
@@ -78,6 +78,13 @@ query GetPosts {
 }
 `;
 
+const CREATE_POST = gql`
+mutation createPost($data: String!) {
+  createPost(input:{data: $data, ownerID:7}) {
+    id
+  }
+}
+`;
 
 const useStyles = createStyles((theme) => ({
   navbar: {
@@ -206,6 +213,7 @@ function DisplayPosts() {
 export default function App() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
+  const [addPost, { data, loading, error }] = useMutation(CREATE_POST);
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
     <AppShell
@@ -246,6 +254,13 @@ export default function App() {
       radius="md"
       size="md"
       placeholder="What's on your mind?"
+      onKeyDown={e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addPost({ variables: {data: e.currentTarget.value } });
+          e.currentTarget.value = '';
+        }
+      }}
     />
       <DisplayPosts />
     </AppShell>
