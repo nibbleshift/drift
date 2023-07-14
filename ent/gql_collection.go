@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/nibbleshift/drift/ent/link"
@@ -185,6 +186,28 @@ func newPostPaginateArgs(rv map[string]any) *postPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &PostOrder{Field: &PostOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithPostOrder(order))
+			}
+		case *PostOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithPostOrder(v))
+			}
+		}
 	}
 	if v, ok := rv[whereField].(*PostWhereInput); ok {
 		args.opts = append(args.opts, WithPostFilter(v.Filter))

@@ -31,5 +31,10 @@ task
 
 # Start postgres
 ```
-docker run -p5432:5432 --name drift-postgres -e POSTGRES_PASSWORD=postgres -d postgres
+docker run -p5432:5432 --name drift-db -e POSTGRES_PASSWORD=postgres -d postgres
+```
+
+# Start keydb (redis)
+```
+docker run -p6379:6379 --name drift-cache -d eqalpha/keydb
 ```

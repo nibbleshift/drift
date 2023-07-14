@@ -28,9 +28,11 @@ func (r *queryResolver) Links(ctx context.Context, after *entgql.Cursor[int], fi
 }
 
 // Posts is the resolver for the posts field.
-func (r *queryResolver) Posts(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.PostWhereInput) (*ent.PostConnection, error) {
+func (r *queryResolver) Posts(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PostOrder, where *ent.PostWhereInput) (*ent.PostConnection, error) {
 	return r.client.Post.Query().
-		Paginate(ctx, after, first, before, last)
+		Paginate(ctx, after, first, before, last,
+			ent.WithPostOrder(orderBy),
+		)
 }
 
 // Tags is the resolver for the tags field.

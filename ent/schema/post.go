@@ -18,7 +18,10 @@ type Post struct {
 // Fields of the Post.
 func (Post) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("created_at").Default(time.Now),
+		field.Time("created_at").Default(time.Now).
+			Annotations(
+				entgql.OrderField("CREATED_AT"),
+			),
 		field.String("data"),
 	}
 }

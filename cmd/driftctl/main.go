@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -66,18 +67,33 @@ func main() {
 		log.Println(err)
 	}
 
-	for i := 0; i < 10; i++ {
+	utter, err := client.Post.Create().SetData(fake.Sentence()).SetOwner(steve).Save(ctx)
 
-		utter, err := client.Post.Create().SetData(fake.Sentence()).SetOwner(steve).Save(ctx)
-
-		if err != nil {
-			log.Println(err)
-		}
-
-		steve.Update().AddPosts(utter).Save(ctx)
-		spew.Dump(steve, corey, adam)
-
+	if err != nil {
+		log.Println(err)
 	}
+
+	steve.Update().AddPosts(utter).Save(ctx)
+
+	time.Sleep(time.Second * 10)
+
+	utter, err = client.Post.Create().SetData(fake.Sentence()).SetOwner(corey).Save(ctx)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	corey.Update().AddPosts(utter).Save(ctx)
+
+	time.Sleep(time.Second * 10)
+	utter, err = client.Post.Create().SetData(fake.Sentence()).SetOwner(adam).Save(ctx)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	adam.Update().AddPosts(utter).Save(ctx)
+
 	spew.Dump(steve, corey, adam)
 
 	users, err := client.User.
