@@ -1,11 +1,17 @@
 version: '3'
 
+includes:
+  ui:
+    taskfile: ./ui/Taskfile.yml
+    dir: ./ui
+
 tasks:
   default:
     cmds:
       - task: generate
       - task: build-driftd
       - task: build-driftctl
+      - task: ui:build
   generate:
     run: when_changed
     cmds:
