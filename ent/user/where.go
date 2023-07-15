@@ -355,6 +355,29 @@ func HasProfileWith(preds ...predicate.UserProfile) predicate.User {
 	})
 }
 
+// HasMentions applies the HasEdge predicate on the "mentions" edge.
+func HasMentions() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, MentionsTable, MentionsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMentionsWith applies the HasEdge predicate on the "mentions" edge with a given conditions (other predicates).
+func HasMentionsWith(preds ...predicate.Post) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newMentionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

@@ -1036,9 +1036,11 @@ type TagMutation struct {
 	op            Op
 	typ           string
 	id            *int
-	created_at    *time.Time
 	data          *string
 	clearedFields map[string]struct{}
+	post          map[int]struct{}
+	removedpost   map[int]struct{}
+	clearedpost   bool
 	done          bool
 	oldValue      func(context.Context) (*Tag, error)
 	predicates    []predicate.Tag
@@ -1142,42 +1144,6 @@ func (m *TagMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *TagMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *TagMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Tag entity.
-// If the Tag object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TagMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *TagMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // SetData sets the "data" field.
 func (m *TagMutation) SetData(s string) {
 	m.data = &s
@@ -1214,6 +1180,60 @@ func (m *TagMutation) ResetData() {
 	m.data = nil
 }
 
+// AddPostIDs adds the "post" edge to the Post entity by ids.
+func (m *TagMutation) AddPostIDs(ids ...int) {
+	if m.post == nil {
+		m.post = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.post[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPost clears the "post" edge to the Post entity.
+func (m *TagMutation) ClearPost() {
+	m.clearedpost = true
+}
+
+// PostCleared reports if the "post" edge to the Post entity was cleared.
+func (m *TagMutation) PostCleared() bool {
+	return m.clearedpost
+}
+
+// RemovePostIDs removes the "post" edge to the Post entity by IDs.
+func (m *TagMutation) RemovePostIDs(ids ...int) {
+	if m.removedpost == nil {
+		m.removedpost = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.post, ids[i])
+		m.removedpost[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPost returns the removed IDs of the "post" edge to the Post entity.
+func (m *TagMutation) RemovedPostIDs() (ids []int) {
+	for id := range m.removedpost {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PostIDs returns the "post" edge IDs in the mutation.
+func (m *TagMutation) PostIDs() (ids []int) {
+	for id := range m.post {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPost resets all changes to the "post" edge.
+func (m *TagMutation) ResetPost() {
+	m.post = nil
+	m.clearedpost = false
+	m.removedpost = nil
+}
+
 // Where appends a list predicates to the TagMutation builder.
 func (m *TagMutation) Where(ps ...predicate.Tag) {
 	m.predicates = append(m.predicates, ps...)
@@ -1248,10 +1268,7 @@ func (m *TagMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TagMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.created_at != nil {
-		fields = append(fields, tag.FieldCreatedAt)
-	}
+	fields := make([]string, 0, 1)
 	if m.data != nil {
 		fields = append(fields, tag.FieldData)
 	}
@@ -1263,8 +1280,6 @@ func (m *TagMutation) Fields() []string {
 // schema.
 func (m *TagMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case tag.FieldCreatedAt:
-		return m.CreatedAt()
 	case tag.FieldData:
 		return m.Data()
 	}
@@ -1276,8 +1291,6 @@ func (m *TagMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case tag.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	case tag.FieldData:
 		return m.OldData(ctx)
 	}
@@ -1289,13 +1302,6 @@ func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *TagMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case tag.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
 	case tag.FieldData:
 		v, ok := value.(string)
 		if !ok {
@@ -1352,9 +1358,6 @@ func (m *TagMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TagMutation) ResetField(name string) error {
 	switch name {
-	case tag.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
 	case tag.FieldData:
 		m.ResetData()
 		return nil
@@ -1364,49 +1367,85 @@ func (m *TagMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TagMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.post != nil {
+		edges = append(edges, tag.EdgePost)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TagMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case tag.EdgePost:
+		ids := make([]ent.Value, 0, len(m.post))
+		for id := range m.post {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TagMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedpost != nil {
+		edges = append(edges, tag.EdgePost)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TagMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case tag.EdgePost:
+		ids := make([]ent.Value, 0, len(m.removedpost))
+		for id := range m.removedpost {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TagMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedpost {
+		edges = append(edges, tag.EdgePost)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TagMutation) EdgeCleared(name string) bool {
+	switch name {
+	case tag.EdgePost:
+		return m.clearedpost
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TagMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Tag unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TagMutation) ResetEdge(name string) error {
+	switch name {
+	case tag.EdgePost:
+		m.ResetPost()
+		return nil
+	}
 	return fmt.Errorf("unknown Tag edge %s", name)
 }
 
@@ -1431,6 +1470,9 @@ type UserMutation struct {
 	clearedfollowers bool
 	profile          *int
 	clearedprofile   bool
+	mentions         map[int]struct{}
+	removedmentions  map[int]struct{}
+	clearedmentions  bool
 	done             bool
 	oldValue         func(context.Context) (*User, error)
 	predicates       []predicate.User
@@ -1843,6 +1885,60 @@ func (m *UserMutation) ResetProfile() {
 	m.clearedprofile = false
 }
 
+// AddMentionIDs adds the "mentions" edge to the Post entity by ids.
+func (m *UserMutation) AddMentionIDs(ids ...int) {
+	if m.mentions == nil {
+		m.mentions = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.mentions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMentions clears the "mentions" edge to the Post entity.
+func (m *UserMutation) ClearMentions() {
+	m.clearedmentions = true
+}
+
+// MentionsCleared reports if the "mentions" edge to the Post entity was cleared.
+func (m *UserMutation) MentionsCleared() bool {
+	return m.clearedmentions
+}
+
+// RemoveMentionIDs removes the "mentions" edge to the Post entity by IDs.
+func (m *UserMutation) RemoveMentionIDs(ids ...int) {
+	if m.removedmentions == nil {
+		m.removedmentions = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.mentions, ids[i])
+		m.removedmentions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMentions returns the removed IDs of the "mentions" edge to the Post entity.
+func (m *UserMutation) RemovedMentionsIDs() (ids []int) {
+	for id := range m.removedmentions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MentionsIDs returns the "mentions" edge IDs in the mutation.
+func (m *UserMutation) MentionsIDs() (ids []int) {
+	for id := range m.mentions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMentions resets all changes to the "mentions" edge.
+func (m *UserMutation) ResetMentions() {
+	m.mentions = nil
+	m.clearedmentions = false
+	m.removedmentions = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -2010,7 +2106,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.posts != nil {
 		edges = append(edges, user.EdgePosts)
 	}
@@ -2022,6 +2118,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.profile != nil {
 		edges = append(edges, user.EdgeProfile)
+	}
+	if m.mentions != nil {
+		edges = append(edges, user.EdgeMentions)
 	}
 	return edges
 }
@@ -2052,13 +2151,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		if id := m.profile; id != nil {
 			return []ent.Value{*id}
 		}
+	case user.EdgeMentions:
+		ids := make([]ent.Value, 0, len(m.mentions))
+		for id := range m.mentions {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedposts != nil {
 		edges = append(edges, user.EdgePosts)
 	}
@@ -2067,6 +2172,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedfollowers != nil {
 		edges = append(edges, user.EdgeFollowers)
+	}
+	if m.removedmentions != nil {
+		edges = append(edges, user.EdgeMentions)
 	}
 	return edges
 }
@@ -2093,13 +2201,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeMentions:
+		ids := make([]ent.Value, 0, len(m.removedmentions))
+		for id := range m.removedmentions {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedposts {
 		edges = append(edges, user.EdgePosts)
 	}
@@ -2111,6 +2225,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedprofile {
 		edges = append(edges, user.EdgeProfile)
+	}
+	if m.clearedmentions {
+		edges = append(edges, user.EdgeMentions)
 	}
 	return edges
 }
@@ -2127,6 +2244,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedfollowers
 	case user.EdgeProfile:
 		return m.clearedprofile
+	case user.EdgeMentions:
+		return m.clearedmentions
 	}
 	return false
 }
@@ -2157,6 +2276,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeProfile:
 		m.ResetProfile()
+		return nil
+	case user.EdgeMentions:
+		m.ResetMentions()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

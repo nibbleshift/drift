@@ -236,11 +236,18 @@ func (t *TagQuery) collectField(ctx context.Context, opCtx *graphql.OperationCon
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-		case "createdAt":
-			if _, ok := fieldSeen[tag.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, tag.FieldCreatedAt)
-				fieldSeen[tag.FieldCreatedAt] = struct{}{}
+		case "post":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PostClient{config: t.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
 			}
+			t.WithNamedPost(alias, func(wq *PostQuery) {
+				*wq = *query
+			})
 		case "data":
 			if _, ok := fieldSeen[tag.FieldData]; !ok {
 				selectedFields = append(selectedFields, tag.FieldData)
@@ -354,6 +361,18 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				return err
 			}
 			u.withProfile = query
+		case "mentions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PostClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			u.WithNamedMentions(alias, func(wq *PostQuery) {
+				*wq = *query
+			})
 		case "username":
 			if _, ok := fieldSeen[user.FieldUsername]; !ok {
 				selectedFields = append(selectedFields, user.FieldUsername)

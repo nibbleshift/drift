@@ -25,7 +25,13 @@ func main() {
 	opts := []entc.Option{
 		entc.Extensions(ex, entviz.Extension{}),
 	}
-	if err := entc.Generate("./ent/schema", &gen.Config{}, opts...); err != nil {
+
+	features := []gen.Feature{
+		gen.FeatureEntQL,
+		gen.FeatureUpsert,
+	}
+
+	if err := entc.Generate("./ent/schema", &gen.Config{Features: features}, opts...); err != nil {
 		log.Fatalf("running ent codegen: %v", err)
 	}
 }

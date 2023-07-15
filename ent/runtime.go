@@ -8,7 +8,6 @@ import (
 	"github.com/nibbleshift/drift/ent/link"
 	"github.com/nibbleshift/drift/ent/post"
 	"github.com/nibbleshift/drift/ent/schema"
-	"github.com/nibbleshift/drift/ent/tag"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -27,10 +26,4 @@ func init() {
 	postDescCreatedAt := postFields[0].Descriptor()
 	// post.DefaultCreatedAt holds the default value on creation for the created_at field.
 	post.DefaultCreatedAt = postDescCreatedAt.Default.(func() time.Time)
-	tagFields := schema.Tag{}.Fields()
-	_ = tagFields
-	// tagDescCreatedAt is the schema descriptor for created_at field.
-	tagDescCreatedAt := tagFields[0].Descriptor()
-	// tag.DefaultCreatedAt holds the default value on creation for the created_at field.
-	tag.DefaultCreatedAt = tagDescCreatedAt.Default.(func() time.Time)
 }

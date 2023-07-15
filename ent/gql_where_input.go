@@ -522,16 +522,6 @@ type TagWhereInput struct {
 	IDLT    *int  `json:"idLT,omitempty"`
 	IDLTE   *int  `json:"idLTE,omitempty"`
 
-	// "created_at" field predicates.
-	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
-	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
-	CreatedAtIn    []time.Time `json:"createdAtIn,omitempty"`
-	CreatedAtNotIn []time.Time `json:"createdAtNotIn,omitempty"`
-	CreatedAtGT    *time.Time  `json:"createdAtGT,omitempty"`
-	CreatedAtGTE   *time.Time  `json:"createdAtGTE,omitempty"`
-	CreatedAtLT    *time.Time  `json:"createdAtLT,omitempty"`
-	CreatedAtLTE   *time.Time  `json:"createdAtLTE,omitempty"`
-
 	// "data" field predicates.
 	Data             *string  `json:"data,omitempty"`
 	DataNEQ          *string  `json:"dataNEQ,omitempty"`
@@ -546,6 +536,10 @@ type TagWhereInput struct {
 	DataHasSuffix    *string  `json:"dataHasSuffix,omitempty"`
 	DataEqualFold    *string  `json:"dataEqualFold,omitempty"`
 	DataContainsFold *string  `json:"dataContainsFold,omitempty"`
+
+	// "post" edge predicates.
+	HasPost     *bool             `json:"hasPost,omitempty"`
+	HasPostWith []*PostWhereInput `json:"hasPostWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -643,30 +637,6 @@ func (i *TagWhereInput) P() (predicate.Tag, error) {
 	if i.IDLTE != nil {
 		predicates = append(predicates, tag.IDLTE(*i.IDLTE))
 	}
-	if i.CreatedAt != nil {
-		predicates = append(predicates, tag.CreatedAtEQ(*i.CreatedAt))
-	}
-	if i.CreatedAtNEQ != nil {
-		predicates = append(predicates, tag.CreatedAtNEQ(*i.CreatedAtNEQ))
-	}
-	if len(i.CreatedAtIn) > 0 {
-		predicates = append(predicates, tag.CreatedAtIn(i.CreatedAtIn...))
-	}
-	if len(i.CreatedAtNotIn) > 0 {
-		predicates = append(predicates, tag.CreatedAtNotIn(i.CreatedAtNotIn...))
-	}
-	if i.CreatedAtGT != nil {
-		predicates = append(predicates, tag.CreatedAtGT(*i.CreatedAtGT))
-	}
-	if i.CreatedAtGTE != nil {
-		predicates = append(predicates, tag.CreatedAtGTE(*i.CreatedAtGTE))
-	}
-	if i.CreatedAtLT != nil {
-		predicates = append(predicates, tag.CreatedAtLT(*i.CreatedAtLT))
-	}
-	if i.CreatedAtLTE != nil {
-		predicates = append(predicates, tag.CreatedAtLTE(*i.CreatedAtLTE))
-	}
 	if i.Data != nil {
 		predicates = append(predicates, tag.DataEQ(*i.Data))
 	}
@@ -707,6 +677,24 @@ func (i *TagWhereInput) P() (predicate.Tag, error) {
 		predicates = append(predicates, tag.DataContainsFold(*i.DataContainsFold))
 	}
 
+	if i.HasPost != nil {
+		p := tag.HasPost()
+		if !*i.HasPost {
+			p = tag.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasPostWith) > 0 {
+		with := make([]predicate.Post, 0, len(i.HasPostWith))
+		for _, w := range i.HasPostWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasPostWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, tag.HasPostWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyTagWhereInput
@@ -794,6 +782,10 @@ type UserWhereInput struct {
 	// "profile" edge predicates.
 	HasProfile     *bool                    `json:"hasProfile,omitempty"`
 	HasProfileWith []*UserProfileWhereInput `json:"hasProfileWith,omitempty"`
+
+	// "mentions" edge predicates.
+	HasMentions     *bool             `json:"hasMentions,omitempty"`
+	HasMentionsWith []*PostWhereInput `json:"hasMentionsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1080,6 +1072,24 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, user.HasProfileWith(with...))
+	}
+	if i.HasMentions != nil {
+		p := user.HasMentions()
+		if !*i.HasMentions {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasMentionsWith) > 0 {
+		with := make([]predicate.Post, 0, len(i.HasMentionsWith))
+		for _, w := range i.HasMentionsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasMentionsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasMentionsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

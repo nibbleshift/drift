@@ -60,16 +60,16 @@ func (c *PostCreate) SetInput(i CreatePostInput) *PostCreate {
 
 // CreateTagInput represents a mutation input for creating tags.
 type CreateTagInput struct {
-	CreatedAt *time.Time
-	Data      string
+	Data    string
+	PostIDs []int
 }
 
 // Mutate applies the CreateTagInput on the TagMutation builder.
 func (i *CreateTagInput) Mutate(m *TagMutation) {
-	if v := i.CreatedAt; v != nil {
-		m.SetCreatedAt(*v)
-	}
 	m.SetData(i.Data)
+	if v := i.PostIDs; len(v) > 0 {
+		m.AddPostIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateTagInput on the TagCreate builder.
@@ -87,6 +87,7 @@ type CreateUserInput struct {
 	FriendIDs   []int
 	FollowerIDs []int
 	ProfileID   *int
+	MentionIDs  []int
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
@@ -105,6 +106,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.ProfileID; v != nil {
 		m.SetProfileID(*v)
+	}
+	if v := i.MentionIDs; len(v) > 0 {
+		m.AddMentionIDs(v...)
 	}
 }
 

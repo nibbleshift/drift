@@ -6,13 +6,57 @@ package drift
 
 import (
 	"context"
+	"log"
 
+	"entgo.io/ent/dialect/sql"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/nibbleshift/drift/ent"
+	"github.com/nibbleshift/drift/ent/tag"
+	"github.com/nibbleshift/drift/ent/user"
 )
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input ent.CreatePostInput) (*ent.Post, error) {
 	return r.client.Post.Create().SetInput(input).Save(ctx)
+}
+
+// CreatePost2 is the resolver for the createPost2 field.
+func (r *mutationResolver) CreatePost2(ctx context.Context, id int, post string, tags []*string, mentions []*string) (*ent.Post, error) {
+	spew.Dump(id, post, tags, mentions)
+
+	postRec := r.client.Post.Create()
+
+	bulkTag := make([]int, len(tags))
+	for i, tagStr := range tags {
+		tagId, err := r.client.Tag.Create().SetData(*tagStr).OnConflict(sql.ConflictColumns(tag.FieldData)).Ignore().ID(ctx)
+
+		if err != nil {
+			log.Println(err)
+		}
+		bulkTag[i] = tagId
+	}
+
+	bulkMention := make([]int, 0, len(mentions))
+	for _, mentionStr := range mentions {
+		user, err := r.client.User.Query().
+			Select(user.FieldID).
+			Where(
+				user.Username(*mentionStr),
+			).First(ctx)
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		bulkMention = append(bulkMention, user.ID)
+	}
+
+	postRec.SetOwnerID(id)
+	postRec.SetData(post)
+	postRec.AddTagIDs(bulkTag...)
+	postRec.AddMentionIDs(bulkMention...)
+
+	return postRec.Save(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

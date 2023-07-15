@@ -53,31 +53,20 @@ var (
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "created_at", Type: field.TypeTime},
 		{Name: "data", Type: field.TypeString, Unique: true},
-		{Name: "post_tags", Type: field.TypeInt, Nullable: true},
 	}
 	// TagsTable holds the schema information for the "tags" table.
 	TagsTable = &schema.Table{
 		Name:       "tags",
 		Columns:    TagsColumns,
 		PrimaryKey: []*schema.Column{TagsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "tags_posts_tags",
-				Columns:    []*schema.Column{TagsColumns[3]},
-				RefColumns: []*schema.Column{PostsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "username", Type: field.TypeString},
+		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "first_name", Type: field.TypeString},
 		{Name: "last_name", Type: field.TypeString},
-		{Name: "post_mentions", Type: field.TypeInt, Nullable: true},
 		{Name: "user_profile", Type: field.TypeInt, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -87,14 +76,8 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "users_posts_mentions",
-				Columns:    []*schema.Column{UsersColumns[4]},
-				RefColumns: []*schema.Column{PostsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "users_user_profiles_profile",
-				Columns:    []*schema.Column{UsersColumns[5]},
+				Columns:    []*schema.Column{UsersColumns[4]},
 				RefColumns: []*schema.Column{UserProfilesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -113,6 +96,56 @@ var (
 		Name:       "user_profiles",
 		Columns:    UserProfilesColumns,
 		PrimaryKey: []*schema.Column{UserProfilesColumns[0]},
+	}
+	// PostTagsColumns holds the columns for the "post_tags" table.
+	PostTagsColumns = []*schema.Column{
+		{Name: "post_id", Type: field.TypeInt},
+		{Name: "tag_id", Type: field.TypeInt},
+	}
+	// PostTagsTable holds the schema information for the "post_tags" table.
+	PostTagsTable = &schema.Table{
+		Name:       "post_tags",
+		Columns:    PostTagsColumns,
+		PrimaryKey: []*schema.Column{PostTagsColumns[0], PostTagsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "post_tags_post_id",
+				Columns:    []*schema.Column{PostTagsColumns[0]},
+				RefColumns: []*schema.Column{PostsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "post_tags_tag_id",
+				Columns:    []*schema.Column{PostTagsColumns[1]},
+				RefColumns: []*schema.Column{TagsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// PostMentionsColumns holds the columns for the "post_mentions" table.
+	PostMentionsColumns = []*schema.Column{
+		{Name: "post_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// PostMentionsTable holds the schema information for the "post_mentions" table.
+	PostMentionsTable = &schema.Table{
+		Name:       "post_mentions",
+		Columns:    PostMentionsColumns,
+		PrimaryKey: []*schema.Column{PostMentionsColumns[0], PostMentionsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "post_mentions_post_id",
+				Columns:    []*schema.Column{PostMentionsColumns[0]},
+				RefColumns: []*schema.Column{PostsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "post_mentions_user_id",
+				Columns:    []*schema.Column{PostMentionsColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// UserFriendsColumns holds the columns for the "user_friends" table.
 	UserFriendsColumns = []*schema.Column{
@@ -171,6 +204,8 @@ var (
 		TagsTable,
 		UsersTable,
 		UserProfilesTable,
+		PostTagsTable,
+		PostMentionsTable,
 		UserFriendsTable,
 		UserFollowersTable,
 	}
@@ -179,9 +214,11 @@ var (
 func init() {
 	LinksTable.ForeignKeys[0].RefTable = UserProfilesTable
 	PostsTable.ForeignKeys[0].RefTable = UsersTable
-	TagsTable.ForeignKeys[0].RefTable = PostsTable
-	UsersTable.ForeignKeys[0].RefTable = PostsTable
-	UsersTable.ForeignKeys[1].RefTable = UserProfilesTable
+	UsersTable.ForeignKeys[0].RefTable = UserProfilesTable
+	PostTagsTable.ForeignKeys[0].RefTable = PostsTable
+	PostTagsTable.ForeignKeys[1].RefTable = TagsTable
+	PostMentionsTable.ForeignKeys[0].RefTable = PostsTable
+	PostMentionsTable.ForeignKeys[1].RefTable = UsersTable
 	UserFriendsTable.ForeignKeys[0].RefTable = UsersTable
 	UserFriendsTable.ForeignKeys[1].RefTable = UsersTable
 	UserFollowersTable.ForeignKeys[0].RefTable = UsersTable

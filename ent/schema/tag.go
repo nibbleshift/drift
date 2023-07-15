@@ -1,11 +1,10 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -17,14 +16,15 @@ type Tag struct {
 // Fields of the Tag.
 func (Tag) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("created_at").Default(time.Now),
 		field.String("data").Unique(),
 	}
 }
 
 // Edges of the Tag.
 func (Tag) Edges() []ent.Edge {
-	return []ent.Edge{}
+	return []ent.Edge{
+		edge.From("post", Post.Type).Ref("tags"),
+	}
 }
 
 // Edges of the Tag.
