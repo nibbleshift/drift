@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -17,12 +16,34 @@ type Tag struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Data holds the value of the "data" field.
-	Data         string `json:"data,omitempty"`
-	post_tags    *int
+	Data string `json:"data,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TagQuery when eager-loading is set.
+	Edges        TagEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// TagEdges holds the relations/edges for other nodes in the graph.
+type TagEdges struct {
+	// Post holds the value of the post edge.
+	Post []*Post `json:"post,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+	// totalCount holds the count of the edges above.
+	totalCount [1]map[string]int
+
+	namedPost map[string][]*Post
+}
+
+// PostOrErr returns the Post value or an error if the edge
+// was not loaded in eager-loading.
+func (e TagEdges) PostOrErr() ([]*Post, error) {
+	if e.loadedTypes[0] {
+		return e.Post, nil
+	}
+	return nil, &NotLoadedError{edge: "post"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,10 +55,6 @@ func (*Tag) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case tag.FieldData:
 			values[i] = new(sql.NullString)
-		case tag.FieldCreatedAt:
-			values[i] = new(sql.NullTime)
-		case tag.ForeignKeys[0]: // post_tags
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -59,24 +76,11 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			t.ID = int(value.Int64)
-		case tag.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				t.CreatedAt = value.Time
-			}
 		case tag.FieldData:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field data", values[i])
 			} else if value.Valid {
 				t.Data = value.String
-			}
-		case tag.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field post_tags", value)
-			} else if value.Valid {
-				t.post_tags = new(int)
-				*t.post_tags = int(value.Int64)
 			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
@@ -89,6 +93,11 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (t *Tag) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
+}
+
+// QueryPost queries the "post" edge of the Tag entity.
+func (t *Tag) QueryPost() *PostQuery {
+	return NewTagClient(t.config).QueryPost(t)
 }
 
 // Update returns a builder for updating this Tag.
@@ -114,13 +123,34 @@ func (t *Tag) String() string {
 	var builder strings.Builder
 	builder.WriteString("Tag(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
-	builder.WriteString("created_at=")
-	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
 	builder.WriteString("data=")
 	builder.WriteString(t.Data)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedPost returns the Post named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (t *Tag) NamedPost(name string) ([]*Post, error) {
+	if t.Edges.namedPost == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := t.Edges.namedPost[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (t *Tag) appendNamedPost(name string, edges ...*Post) {
+	if t.Edges.namedPost == nil {
+		t.Edges.namedPost = make(map[string][]*Post)
+	}
+	if len(edges) == 0 {
+		t.Edges.namedPost[name] = []*Post{}
+	} else {
+		t.Edges.namedPost[name] = append(t.Edges.namedPost[name], edges...)
+	}
 }
 
 // Tags is a parsable slice of Tag.

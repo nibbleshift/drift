@@ -28,12 +28,14 @@ type UserQuery struct {
 	withFriends        *UserQuery
 	withFollowers      *UserQuery
 	withProfile        *UserProfileQuery
+	withMentions       *PostQuery
 	withFKs            bool
 	modifiers          []func(*sql.Selector)
 	loadTotal          []func(context.Context, []*User) error
 	withNamedPosts     map[string]*PostQuery
 	withNamedFriends   map[string]*UserQuery
 	withNamedFollowers map[string]*UserQuery
+	withNamedMentions  map[string]*PostQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -151,6 +153,28 @@ func (uq *UserQuery) QueryProfile() *UserProfileQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(userprofile.Table, userprofile.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, user.ProfileTable, user.ProfileColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMentions chains the current query on the "mentions" edge.
+func (uq *UserQuery) QueryMentions() *PostQuery {
+	query := (&PostClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(post.Table, post.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.MentionsTable, user.MentionsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -354,6 +378,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withFriends:   uq.withFriends.Clone(),
 		withFollowers: uq.withFollowers.Clone(),
 		withProfile:   uq.withProfile.Clone(),
+		withMentions:  uq.withMentions.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -401,6 +426,17 @@ func (uq *UserQuery) WithProfile(opts ...func(*UserProfileQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withProfile = query
+	return uq
+}
+
+// WithMentions tells the query-builder to eager-load the nodes that are connected to
+// the "mentions" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithMentions(opts ...func(*PostQuery)) *UserQuery {
+	query := (&PostClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withMentions = query
 	return uq
 }
 
@@ -483,11 +519,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			uq.withPosts != nil,
 			uq.withFriends != nil,
 			uq.withFollowers != nil,
 			uq.withProfile != nil,
+			uq.withMentions != nil,
 		}
 	)
 	if uq.withProfile != nil {
@@ -544,6 +581,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := uq.withMentions; query != nil {
+		if err := uq.loadMentions(ctx, query, nodes,
+			func(n *User) { n.Edges.Mentions = []*Post{} },
+			func(n *User, e *Post) { n.Edges.Mentions = append(n.Edges.Mentions, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range uq.withNamedPosts {
 		if err := uq.loadPosts(ctx, query, nodes,
 			func(n *User) { n.appendNamedPosts(name) },
@@ -562,6 +606,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadFollowers(ctx, query, nodes,
 			func(n *User) { n.appendNamedFollowers(name) },
 			func(n *User, e *User) { n.appendNamedFollowers(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range uq.withNamedMentions {
+		if err := uq.loadMentions(ctx, query, nodes,
+			func(n *User) { n.appendNamedMentions(name) },
+			func(n *User, e *Post) { n.appendNamedMentions(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -758,6 +809,67 @@ func (uq *UserQuery) loadProfile(ctx context.Context, query *UserProfileQuery, n
 	}
 	return nil
 }
+func (uq *UserQuery) loadMentions(ctx context.Context, query *PostQuery, nodes []*User, init func(*User), assign func(*User, *Post)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*User)
+	nids := make(map[int]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.MentionsTable)
+		s.Join(joinT).On(s.C(post.FieldID), joinT.C(user.MentionsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(user.MentionsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.MentionsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Post](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "mentions" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 
 func (uq *UserQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := uq.querySpec()
@@ -882,6 +994,20 @@ func (uq *UserQuery) WithNamedFollowers(name string, opts ...func(*UserQuery)) *
 		uq.withNamedFollowers = make(map[string]*UserQuery)
 	}
 	uq.withNamedFollowers[name] = query
+	return uq
+}
+
+// WithNamedMentions tells the query-builder to eager-load the nodes that are connected to the "mentions"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithNamedMentions(name string, opts ...func(*PostQuery)) *UserQuery {
+	query := (&PostClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if uq.withNamedMentions == nil {
+		uq.withNamedMentions = make(map[string]*PostQuery)
+	}
+	uq.withNamedMentions[name] = query
 	return uq
 }
 

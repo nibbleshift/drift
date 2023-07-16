@@ -32,6 +32,7 @@ func (r *queryResolver) Posts(ctx context.Context, after *entgql.Cursor[int], fi
 	return r.client.Post.Query().
 		Paginate(ctx, after, first, before, last,
 			ent.WithPostOrder(orderBy),
+			ent.WithPostFilter(where.Filter),
 		)
 }
 

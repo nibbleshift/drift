@@ -3,9 +3,8 @@
 package tag
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -13,26 +12,30 @@ const (
 	Label = "tag"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
 	// FieldData holds the string denoting the data field in the database.
 	FieldData = "data"
+	// EdgePost holds the string denoting the post edge name in mutations.
+	EdgePost = "post"
 	// Table holds the table name of the tag in the database.
 	Table = "tags"
+	// PostTable is the table that holds the post relation/edge. The primary key declared below.
+	PostTable = "post_tags"
+	// PostInverseTable is the table name for the Post entity.
+	// It exists in this package in order to avoid circular dependency with the "post" package.
+	PostInverseTable = "posts"
 )
 
 // Columns holds all SQL columns for tag fields.
 var Columns = []string{
 	FieldID,
-	FieldCreatedAt,
 	FieldData,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "tags"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"post_tags",
-}
+var (
+	// PostPrimaryKey and PostColumn2 are the table columns denoting the
+	// primary key for the post relation (M2M).
+	PostPrimaryKey = []string{"post_id", "tag_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -41,18 +44,8 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
-			return true
-		}
-	}
 	return false
 }
-
-var (
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
-)
 
 // OrderOption defines the ordering options for the Tag queries.
 type OrderOption func(*sql.Selector)
@@ -62,12 +55,28 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
 // ByData orders the results by the data field.
 func ByData(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldData, opts...).ToFunc()
+}
+
+// ByPostCount orders the results by post count.
+func ByPostCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPostStep(), opts...)
+	}
+}
+
+// ByPost orders the results by post terms.
+func ByPost(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPostStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newPostStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PostInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, PostTable, PostPrimaryKey...),
+	)
 }

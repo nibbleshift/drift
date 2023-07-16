@@ -25,10 +25,9 @@ type User struct {
 	LastName string `json:"last_name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges         UserEdges `json:"edges"`
-	post_mentions *int
-	user_profile  *int
-	selectValues  sql.SelectValues
+	Edges        UserEdges `json:"edges"`
+	user_profile *int
+	selectValues sql.SelectValues
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
@@ -41,15 +40,18 @@ type UserEdges struct {
 	Followers []*User `json:"followers,omitempty"`
 	// Profile holds the value of the profile edge.
 	Profile *UserProfile `json:"profile,omitempty"`
+	// Mentions holds the value of the mentions edge.
+	Mentions []*Post `json:"mentions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 	// totalCount holds the count of the edges above.
-	totalCount [4]map[string]int
+	totalCount [5]map[string]int
 
 	namedPosts     map[string][]*Post
 	namedFriends   map[string][]*User
 	namedFollowers map[string][]*User
+	namedMentions  map[string][]*Post
 }
 
 // PostsOrErr returns the Posts value or an error if the edge
@@ -92,6 +94,15 @@ func (e UserEdges) ProfileOrErr() (*UserProfile, error) {
 	return nil, &NotLoadedError{edge: "profile"}
 }
 
+// MentionsOrErr returns the Mentions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) MentionsOrErr() ([]*Post, error) {
+	if e.loadedTypes[4] {
+		return e.Mentions, nil
+	}
+	return nil, &NotLoadedError{edge: "mentions"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -101,9 +112,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case user.FieldUsername, user.FieldFirstName, user.FieldLastName:
 			values[i] = new(sql.NullString)
-		case user.ForeignKeys[0]: // post_mentions
-			values[i] = new(sql.NullInt64)
-		case user.ForeignKeys[1]: // user_profile
+		case user.ForeignKeys[0]: // user_profile
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -146,13 +155,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 			}
 		case user.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field post_mentions", value)
-			} else if value.Valid {
-				u.post_mentions = new(int)
-				*u.post_mentions = int(value.Int64)
-			}
-		case user.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_profile", value)
 			} else if value.Valid {
 				u.user_profile = new(int)
@@ -189,6 +191,11 @@ func (u *User) QueryFollowers() *UserQuery {
 // QueryProfile queries the "profile" edge of the User entity.
 func (u *User) QueryProfile() *UserProfileQuery {
 	return NewUserClient(u.config).QueryProfile(u)
+}
+
+// QueryMentions queries the "mentions" edge of the User entity.
+func (u *User) QueryMentions() *PostQuery {
+	return NewUserClient(u.config).QueryMentions(u)
 }
 
 // Update returns a builder for updating this User.
@@ -295,6 +302,30 @@ func (u *User) appendNamedFollowers(name string, edges ...*User) {
 		u.Edges.namedFollowers[name] = []*User{}
 	} else {
 		u.Edges.namedFollowers[name] = append(u.Edges.namedFollowers[name], edges...)
+	}
+}
+
+// NamedMentions returns the Mentions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedMentions(name string) ([]*Post, error) {
+	if u.Edges.namedMentions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedMentions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedMentions(name string, edges ...*Post) {
+	if u.Edges.namedMentions == nil {
+		u.Edges.namedMentions = make(map[string][]*Post)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedMentions[name] = []*Post{}
+	} else {
+		u.Edges.namedMentions[name] = append(u.Edges.namedMentions[name], edges...)
 	}
 }
 

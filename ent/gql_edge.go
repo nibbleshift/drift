@@ -40,6 +40,18 @@ func (po *Post) Mentions(ctx context.Context) (result []*User, err error) {
 	return result, err
 }
 
+func (t *Tag) Post(ctx context.Context) (result []*Post, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = t.NamedPost(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = t.Edges.PostOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = t.QueryPost().All(ctx)
+	}
+	return result, err
+}
+
 func (u *User) Posts(ctx context.Context) (result []*Post, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = u.NamedPosts(graphql.GetFieldContext(ctx).Field.Alias)
@@ -82,6 +94,18 @@ func (u *User) Profile(ctx context.Context) (*UserProfile, error) {
 		result, err = u.QueryProfile().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (u *User) Mentions(ctx context.Context) (result []*Post, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedMentions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.MentionsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QueryMentions().All(ctx)
+	}
+	return result, err
 }
 
 func (up *UserProfile) Links(ctx context.Context) (result []*Link, err error) {

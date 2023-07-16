@@ -111,6 +111,21 @@ func (uu *UserUpdate) SetProfile(u *UserProfile) *UserUpdate {
 	return uu.SetProfileID(u.ID)
 }
 
+// AddMentionIDs adds the "mentions" edge to the Post entity by IDs.
+func (uu *UserUpdate) AddMentionIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddMentionIDs(ids...)
+	return uu
+}
+
+// AddMentions adds the "mentions" edges to the Post entity.
+func (uu *UserUpdate) AddMentions(p ...*Post) *UserUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.AddMentionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -183,6 +198,27 @@ func (uu *UserUpdate) RemoveFollowers(u ...*User) *UserUpdate {
 func (uu *UserUpdate) ClearProfile() *UserUpdate {
 	uu.mutation.ClearProfile()
 	return uu
+}
+
+// ClearMentions clears all "mentions" edges to the Post entity.
+func (uu *UserUpdate) ClearMentions() *UserUpdate {
+	uu.mutation.ClearMentions()
+	return uu
+}
+
+// RemoveMentionIDs removes the "mentions" edge to Post entities by IDs.
+func (uu *UserUpdate) RemoveMentionIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveMentionIDs(ids...)
+	return uu
+}
+
+// RemoveMentions removes "mentions" edges to Post entities.
+func (uu *UserUpdate) RemoveMentions(p ...*Post) *UserUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.RemoveMentionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -394,6 +430,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.MentionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.MentionsTable,
+			Columns: user.MentionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedMentionsIDs(); len(nodes) > 0 && !uu.mutation.MentionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.MentionsTable,
+			Columns: user.MentionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.MentionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.MentionsTable,
+			Columns: user.MentionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -496,6 +577,21 @@ func (uuo *UserUpdateOne) SetProfile(u *UserProfile) *UserUpdateOne {
 	return uuo.SetProfileID(u.ID)
 }
 
+// AddMentionIDs adds the "mentions" edge to the Post entity by IDs.
+func (uuo *UserUpdateOne) AddMentionIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddMentionIDs(ids...)
+	return uuo
+}
+
+// AddMentions adds the "mentions" edges to the Post entity.
+func (uuo *UserUpdateOne) AddMentions(p ...*Post) *UserUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.AddMentionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -568,6 +664,27 @@ func (uuo *UserUpdateOne) RemoveFollowers(u ...*User) *UserUpdateOne {
 func (uuo *UserUpdateOne) ClearProfile() *UserUpdateOne {
 	uuo.mutation.ClearProfile()
 	return uuo
+}
+
+// ClearMentions clears all "mentions" edges to the Post entity.
+func (uuo *UserUpdateOne) ClearMentions() *UserUpdateOne {
+	uuo.mutation.ClearMentions()
+	return uuo
+}
+
+// RemoveMentionIDs removes the "mentions" edge to Post entities by IDs.
+func (uuo *UserUpdateOne) RemoveMentionIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveMentionIDs(ids...)
+	return uuo
+}
+
+// RemoveMentions removes "mentions" edges to Post entities.
+func (uuo *UserUpdateOne) RemoveMentions(p ...*Post) *UserUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.RemoveMentionIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -802,6 +919,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userprofile.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.MentionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.MentionsTable,
+			Columns: user.MentionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedMentionsIDs(); len(nodes) > 0 && !uuo.mutation.MentionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.MentionsTable,
+			Columns: user.MentionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.MentionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.MentionsTable,
+			Columns: user.MentionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
