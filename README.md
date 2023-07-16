@@ -41,5 +41,5 @@ docker run -p6379:6379 --name drift-cache -d eqalpha/keydb
 
 # Start casdoor (auth)
 ```
-docker run -p 8000:8000 casbin/casdoor-all-in-one
+docker run -p 8000:8000 -d casbin/casdoor-all-in-one
 ```
