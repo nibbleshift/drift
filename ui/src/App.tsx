@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   MantineProvider,
   AppShell,
@@ -24,12 +24,7 @@ import {
 
 import { Route, BrowserRouter, Routes } from "react-router-dom";
 
-import emojify from 'emojify';
-
-import TimeAgo from 'javascript-time-ago'
-import en from 'javascript-time-ago/locale/en.json'
-TimeAgo.addDefaultLocale(en)
-import ReactTimeAgo from 'react-time-ago'
+import SDK from 'casdoor-js-sdk';
 
 import {
   IconNotes,
@@ -43,11 +38,10 @@ import {
 import { LinksGroup } from './NavbarLinksGroup';
 import { Logo } from './Logo';
 import { UserButton } from './UserButton';
-import { Drifts } from './Drifts';
-import * as Setting from './Setting';
+import { Home } from './Home';
 import { useQuery, useMutation, gql } from '@apollo/client';
 
-
+import { config } from "./Setting";
 import { AuthCallback } from "casdoor-react-sdk";
 
 const GET_USERS = gql`
@@ -65,39 +59,6 @@ query GetUsers {
         }
       }
     }
-  }
-}
-`;
-
-const GET_POSTS = gql`
-query GetPosts {
-  posts(first: 10, orderBy: {direction: DESC, field: CREATED_AT}) {
-    edges {
-      node {
-        id
-        createdAt
-        data
-        owner {
-          username
-        }
-      }
-    }
-  }
-}
-`;
-
-const CREATE_POST = gql`
-mutation createPost($data: String!) {
-  createPost(input:{data: $data, ownerID:7}) {
-    id
-  }
-}
-`;
-
-const CREATE_POST2 = gql`
-mutation createPost2($id: Int!, $post: String!, $tags: [String], $mentions: [String]) {
-  createPost2(id: $id, post: $post, tags: $tags, mentions: $mentions) {
-    id
   }
 }
 `;
@@ -196,15 +157,52 @@ function LeftNav() {
   );
 }
 
+
 export default function App() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
-  const [addPost2, { data, loading, error }] = useMutation(CREATE_POST2);
+  const [username, setUsername] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [tokenReceived, setTokenReceived] = useState(false);
+  const [sdk, setSdk] = useState(new SDK(config));
+
+  useEffect(() => {
+    if (window.location.href.indexOf('code') !== -1) {
+      if (!sessionStorage.getItem('token')) {
+        sdk.signin("http://localhost:8000").then(res => {
+          sessionStorage.setItem('token', res.token);
+          setTokenReceived(true);
+        });
+      }
+    }
+  }, [sdk]);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('token')) {
+      getInfo().then(res => setInfo(res));
+
+      async function getInfo() {
+        let token = sessionStorage.getItem('token');
+        if (!token) {
+          return;
+        }
+        else {
+          return fetch(`http://localhost:9900/api/getUserInfo?token=${token}`).then(res => res.json());
+        }
+      }
+
+      function setInfo(res) {
+        let userinfo = res;
+        setUsername(userinfo.name);
+        setIsLoggedIn(true);
+      }
+    }
+  }, [tokenReceived])
 
   const authCallback = (
     <AuthCallback
-      sdk={Setting.CasdoorSDK}
-      serverUrl={Setting.ServerUrl}
+      sdk={SDK}
+      serverUrl={config.ServerUrl}
       saveTokenFromResponse={(res) => {
         // @ts-ignore
         // save token
@@ -221,7 +219,9 @@ export default function App() {
 
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
-    <AppShell
+    {
+      isLoggedIn
+      ? <AppShell
       styles={{
         main: {
           background: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0],
@@ -257,11 +257,11 @@ export default function App() {
     >
     <BrowserRouter>
       <Routes>
-        <Route path="/callback" element={authCallback} />
-        <Route path="/" element={<Drifts/>} />
+        <Route path="/" element={<Home/>} />
       </Routes>
     </BrowserRouter>
-    </AppShell>
-    </MantineProvider>
+    </AppShell> : window.location.href = sdk.getSigninUrl()
+    }
+    </MantineProvider> 
   );
 }

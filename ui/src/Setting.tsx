@@ -1,14 +1,8 @@
-import Sdk from "casdoor-js-sdk";
-
-export const ServerUrl = "http://localhost:7023";
-
-const sdkConfig = {
+export const config = {
   serverUrl: "http://localhost:8000",
-  clientId: "586d88470bc11dbce0b6",
-  appName: "application_leo4ii",
-  organizationName: "organization_1110ds",
+  clientId: "99c54cb29ac856f66c64",
+  appName: "drift_ui",
+  organizationName: "drift",
   redirectPath: "/callback",
   signinPath: "/api/signin",
 };
-
-export const CasdoorSDK = new Sdk(sdkConfig);
