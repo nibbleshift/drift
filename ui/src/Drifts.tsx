@@ -1,18 +1,11 @@
 import { useState } from 'react';
 import {
-  MantineProvider,
-  AppShell,
-  Navbar,
-  Header,
-  Footer,
-  Aside,
   Text,
-  TextInput,
+  Card,
   Group,
   Badge,
-  Card,
+  TextInput,
   MediaQuery,
-  Burger,
   List,
   Stack,
   useMantineTheme,
@@ -23,32 +16,12 @@ import {
 } from '@mantine/core';
 
 
-import { SilentSignin, isSilentSigninRequired } from "casdoor-react-sdk";
-
-import emojify from 'emojify';
-
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 TimeAgo.addDefaultLocale(en)
 import ReactTimeAgo from 'react-time-ago'
 
-import {
-  IconNotes,
-  IconCalendarStats,
-  IconGauge,
-  IconPresentationAnalytics,
-  IconFileAnalytics,
-  IconAdjustments,
-  IconLock,
-} from '@tabler/icons-react';
-import { LinksGroup } from './NavbarLinksGroup';
-import { Logo } from './Logo';
-import { UserButton } from './UserButton';
 import { useQuery, useMutation, gql } from '@apollo/client';
-
-import * as Setting from './Setting';
-import { Route, BrowserRouter, Routes } from "react-router-dom";
-import { AuthCallback } from "casdoor-react-sdk";
 
 const GET_USERS = gql`
 query GetUsers {

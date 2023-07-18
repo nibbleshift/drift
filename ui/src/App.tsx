@@ -41,27 +41,6 @@ import { UserButton } from './UserButton';
 import { Home } from './Home';
 import { useQuery, useMutation, gql } from '@apollo/client';
 
-import { config } from "./Setting";
-import { AuthCallback } from "casdoor-react-sdk";
-
-const GET_USERS = gql`
-query GetUsers {
-  users {
-    edges {
-      node {
-        id
-        username
-        firstName
-        lastName
-        posts {
-	  createdAt
-          data
-        }
-      }
-    }
-  }
-}
-`;
 
 const useStyles = createStyles((theme) => ({
   navbar: {
@@ -161,67 +140,11 @@ function LeftNav() {
 export default function App() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
-  const [username, setUsername] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [tokenReceived, setTokenReceived] = useState(false);
-  const [sdk, setSdk] = useState(new SDK(config));
 
-  useEffect(() => {
-    if (window.location.href.indexOf('code') !== -1) {
-      if (!sessionStorage.getItem('token')) {
-        sdk.signin("http://localhost:8000").then(res => {
-          sessionStorage.setItem('token', res.token);
-          setTokenReceived(true);
-        });
-      }
-    }
-  }, [sdk]);
-
-  useEffect(() => {
-    if (sessionStorage.getItem('token')) {
-      getInfo().then(res => setInfo(res));
-
-      async function getInfo() {
-        let token = sessionStorage.getItem('token');
-        if (!token) {
-          return;
-        }
-        else {
-          return fetch(`http://localhost:9900/api/getUserInfo?token=${token}`).then(res => res.json());
-        }
-      }
-
-      function setInfo(res) {
-        let userinfo = res;
-        setUsername(userinfo.name);
-        setIsLoggedIn(true);
-      }
-    }
-  }, [tokenReceived])
-
-  const authCallback = (
-    <AuthCallback
-      sdk={SDK}
-      serverUrl={config.ServerUrl}
-      saveTokenFromResponse={(res) => {
-        // @ts-ignore
-        // save token
-        localStorage.setItem("token", res.data.accessToken);
-      }}
-      isGetTokenSuccessful={(res) => {
-        // @ts-ignore
-        // according to the data returned by the server,
-        // determine whether the `token` is successfully obtained through `code` and `state`.
-        return res.success === true;
-      }}
-    />
-  );
 
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
-    {
-      isLoggedIn
-      ? <AppShell
+     <AppShell
       styles={{
         main: {
           background: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0],
@@ -260,8 +183,7 @@ export default function App() {
         <Route path="/" element={<Home/>} />
       </Routes>
     </BrowserRouter>
-    </AppShell> : window.location.href = sdk.getSigninUrl()
-    }
+    </AppShell> 
     </MantineProvider> 
   );
 }
