@@ -23,12 +23,7 @@ const client = new ApolloClient({
 
 const oidcConfig = {
   onSignIn: async (response: any) => {
-    alert(
-      "You logged in :" +
-        response.profile.given_name +
-        " " +
-        response.profile.family_name
-    );
+    console.log(response.profile);
     window.location.hash = "";
   },
   authority: "http://localhost:8080", // replace with your instance
