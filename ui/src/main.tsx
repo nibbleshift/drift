@@ -1,5 +1,6 @@
-import React from 'react'
+import React from 'react';
 import ReactDOM from 'react-dom/client'
+import { useState } from 'react';
 import App from './App.tsx'
 import './index.css'
 import { AuthProvider } from "oidc-react";
@@ -21,11 +22,14 @@ const client = new ApolloClient({
   cache: new InMemoryCache()
 });
 
+var profile = {};
+
 const oidcConfig = {
   onSignIn: async (response: any) => {
+    profile = response.profile;
+    console.log(response.profile);
     window.location.hash = "";
     window.location = "/";
-    console.log(response.profile);
   },
   authority: "http://localhost:8080",
   clientId: "223673647603187715@drift",
@@ -38,7 +42,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
    <AuthProvider {...oidcConfig}>
     <ApolloProvider client={client}>
-      <App />
+      <App profile={profile}/>
       </ApolloProvider>
    </AuthProvider>
   </React.StrictMode>

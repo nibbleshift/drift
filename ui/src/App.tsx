@@ -128,7 +128,7 @@ function LeftNav() {
       <Navbar.Section className={classes.footer}>
         <UserButton
           image="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=255&q=80"
-          name="Ann Nullpointer"
+          name="{profile.name}"
           email="anullpointer@yahoo.com"
         />
       </Navbar.Section>
@@ -136,14 +136,14 @@ function LeftNav() {
   );
 }
 
-
-export default function App() {
+const App = (props) => {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
 
-
+  console.log(props);
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
+   
      <AppShell
       styles={{
         main: {
@@ -173,7 +173,7 @@ export default function App() {
                 mr="xl"
               />
             </MediaQuery>
-            <Text>DriftSocial</Text>
+            <Text>DriftSocial    </Text>
           </div>
         </Header>
       }
@@ -187,3 +187,5 @@ export default function App() {
     </MantineProvider> 
   );
 }
+
+export default App;
