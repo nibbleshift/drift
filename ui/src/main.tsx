@@ -23,11 +23,11 @@ const client = new ApolloClient({
 
 const oidcConfig = {
   onSignIn: async (response: any) => {
-    console.log(response.profile);
     window.location.hash = "";
+    window.location = "/";
+    console.log(response.profile);
   },
-  authority: "http://localhost:8080", // replace with your instance
-  //clientId: "223672648771633155@drift",
+  authority: "http://localhost:8080",
   clientId: "223673647603187715@drift",
   responseType: "code",
   redirectUri: "http://localhost:5173/callback",
