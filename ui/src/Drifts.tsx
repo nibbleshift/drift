@@ -149,7 +149,7 @@ export function Drifts() {
         }
       }}
     />
-      <DisplayPosts />
+    <DisplayPosts />
     </div>
     );
 }
