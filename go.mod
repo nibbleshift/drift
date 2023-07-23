@@ -5,15 +5,14 @@ go 1.19
 require (
 	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.3
-	github.com/99designs/gqlgen v0.17.34
-	github.com/casdoor/casdoor-go-sdk v0.25.0
+	github.com/99designs/gqlgen v0.17.35
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-chi/chi v1.5.4
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/rs/cors v1.9.0
-	github.com/vektah/gqlparser/v2 v2.5.6
+	github.com/vektah/gqlparser/v2 v2.5.8
 	golang.org/x/sync v0.3.0
 )
 
@@ -24,8 +23,6 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/corpix/uarand v0.2.0 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
-	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -42,14 +39,10 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.13.2 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
-	golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb // indirect
+	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.12.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

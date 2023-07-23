@@ -33,3 +33,4 @@ tasks:
     sources:
       - src/*
       - node_modules
+      - Dockerfile

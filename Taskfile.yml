@@ -63,3 +63,10 @@ tasks:
       - ./drift-0.1.0.tgz
     cmds:
       - helm upgrade --install --create-namespace dev -n dev ./drift-0.1.0.tgz
+  push:
+    deps: [docker]
+    cmds:
+      - docker tag drift/driftd drift-registry.localhost:5000/drift/driftd
+      - docker push drift-registry.localhost:5000/drift/driftd
+      - docker tag drift/drift-ui drift-registry.localhost:5000/drift/drift-ui
+      - docker push drift-registry.localhost:5000/drift/drift-ui

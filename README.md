@@ -53,3 +53,9 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 ```
+
+
+# Setup cluster
+```
+k3d cluster create drift --registry-create drift-registry:0.0.0.0:5000
+```
