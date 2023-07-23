@@ -39,11 +39,6 @@ docker run -p5432:5432 --name drift-db -e POSTGRES_PASSWORD=postgres -d postgres
 docker run -p6379:6379 --name drift-cache -d eqalpha/keydb
 ```
 
-# Start casdoor (auth)
-```
-docker run -p 8000:8000 -d casbin/casdoor-all-in-one
-```
-
 # Install Helm
 ```
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
