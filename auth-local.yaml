@@ -1,2 +1,29 @@
 zitadel:
-  masterkey: master
+  masterkey: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  configmapConfig:
+    ExternalSecure: false
+    TLS:
+      Enabled: false 
+  secretConfig:
+    Database:
+      cockroach:
+        User:
+          Password: "password"
+
+replicaCount: 1
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - host: auth.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: auth-zitadel
+              port:
+                number: 8080
+
+  tls: []
