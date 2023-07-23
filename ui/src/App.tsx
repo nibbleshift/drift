@@ -1,30 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   MantineProvider,
   AppShell,
   Navbar,
   Header,
-  Footer,
   Aside,
   Text,
-  TextInput,
-  Group,
-  Badge,
-  Card,
   MediaQuery,
   Burger,
-  List,
-  Stack,
   useMantineTheme,
   createStyles,
   rem,
-  Code,
   ScrollArea,
 } from '@mantine/core';
 
 import { Route, BrowserRouter, Routes } from "react-router-dom";
-
-import SDK from 'casdoor-js-sdk';
 
 import {
   IconNotes,
@@ -36,10 +26,8 @@ import {
   IconLock,
 } from '@tabler/icons-react';
 import { LinksGroup } from './NavbarLinksGroup';
-import { Logo } from './Logo';
 import { UserButton } from './UserButton';
 import { Home } from './Home';
-import { useQuery, useMutation, gql } from '@apollo/client';
 
 
 const useStyles = createStyles((theme) => ({
@@ -136,7 +124,7 @@ function LeftNav() {
   );
 }
 
-const App = (props) => {
+const App = () => {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
 
