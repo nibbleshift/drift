@@ -140,7 +140,6 @@ const App = (props) => {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
 
-  console.log(props);
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
    

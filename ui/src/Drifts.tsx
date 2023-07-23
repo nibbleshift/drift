@@ -13,6 +13,7 @@ import {
   rem,
   Code,
   ScrollArea,
+  Loader,
 } from '@mantine/core';
 
 
@@ -70,7 +71,7 @@ mutation createPost2($id: Int!, $post: String!, $tags: [String], $mentions: [Str
 function DisplayPosts() {
   const { loading, error, data } = useQuery(GET_POSTS);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loader />;
   if (error) return <p>Error : {error.message}</p>;
 
    var cards = data.posts.edges.map(({ node }) => (
@@ -78,7 +79,7 @@ function DisplayPosts() {
       <Group position="apart" mt="xs" mb="xs">
         <Group position="left" mt="xs" mb="xs">
           <Text weight={500} fz="sm">{node.owner.username}</Text>
-          <Text weight={500} fz="sm" c="dimmed"><ReactTimeAgo date={node.createdAt} locale="en-US"/></Text>
+          <Text weight={500} fz="sm" c="dimmed"><ReactTimeAgo date={Date.parse(node.createdAt)} locale="en-US"/></Text>
         </Group>
           <Badge color="green" variant="light">
             Verified
@@ -90,8 +91,8 @@ function DisplayPosts() {
     </Card>
     
   ));
-  var items = cards.map((item) => (
-    <div key={item}>{item}</div>
+  var items = cards.map((item, idx) => (
+    <div key={idx}>{item}</div>
   ));
 
   return <Stack spacing="xs">{items}</Stack>;

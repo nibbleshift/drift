@@ -27,15 +27,13 @@ var profile = {};
 const oidcConfig = {
   onSignIn: async (response: any) => {
     profile = response.profile;
-    console.log(response.profile);
     window.location.hash = "";
-    window.location = "/";
   },
   authority: "http://localhost:8080",
   clientId: "223673647603187715@drift",
   responseType: "code",
   redirectUri: "http://localhost:5173/callback",
-  scope: "openid profile email",
+  scope: "openid profile email meta",
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
