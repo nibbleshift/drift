@@ -1,3 +1,4 @@
+---
 version: '3'
 
 includes:
@@ -63,7 +64,17 @@ tasks:
       - ./drift-0.1.0.tgz
       - local.yaml
     cmds:
-      - helm upgrade --install --create-namespace dev -n dev ./drift-0.1.0.tgz --values local.yaml
+      - helm upgrade --install --create-namespace auth -n auth cockroachdb/cockroachdb
+          --set fullnameOverride=crdb
+          --set single-node=true
+          --set statefulset.replicas=1
+      - helm upgrade --install --create-namespace auth -n auth zitadel/zitadel
+          --set zitadel.masterkey="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          --set zitadel.configmapConfig.ExternalSecure=false
+          --set zitadel.configmapConfig.TLS.Enabled=false
+          --set zitadel.secretConfig.Database.cockroach.User.Password="password"
+          --set replicaCount=1
+      - helm upgrade --install --create-namespace dev -n dev ./drift-0.1.0.tgz --values drift-local.yaml
   push:
     cmds:
       - docker tag drift/driftd drift-registry.localhost:5000/drift/driftd
@@ -73,4 +84,8 @@ tasks:
   k3d:
     cmds:
       - k3d cluster create drift --registry-create drift-registry:0.0.0.0:5000 -p "80:80@loadbalancer"
-
+  repos:
+    cmds:
+      - helm repo add zitadel https://charts.zitadel.com
+      - helm repo add enapter https://enapter.github.io/charts/
+      - helm repo add cockroachdb https://charts.cockroachdb.com/
