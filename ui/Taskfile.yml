@@ -26,3 +26,10 @@ tasks:
     deps: [fetch]
     cmds:
       - yarn dev
+  docker:
+    run: when_changed
+    cmds:
+      - docker build -t drift/drift-ui .
+    sources:
+      - src/*
+      - node_modules

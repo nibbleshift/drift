@@ -1,0 +1,11 @@
+FROM golang:1.21rc3 as build
+VOLUME /go
+WORKDIR /build
+COPY go.mod go.sum .
+RUN go mod download
+COPY . .
+RUN go build -o driftd cmd/driftd/*.go
+
+FROM busybox:1.36.1-glibc
+WORKDIR /app
+COPY --from=build /build/driftd .

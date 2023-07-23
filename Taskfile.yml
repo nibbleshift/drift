@@ -52,6 +52,10 @@ tasks:
       - ./drift-0.1.0.tgz
     cmds:
       - helm package ./chart
+  docker:
+    cmds:
+      - task: ui:docker
+      - docker build -t drift/driftd -f Dockerfile.driftd .
   deploy:
     run: when_changed
     deps: [chart]
