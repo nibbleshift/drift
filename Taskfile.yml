@@ -43,3 +43,19 @@ tasks:
       - driftctl
     cmds:
       - go build -o driftctl cmd/driftctl/*.go 
+  chart:
+    run: when_changed
+    sources:
+      - chart/*.yaml
+      - templates/*/*.yaml
+    generates:
+      - ./drift-0.1.0.tgz
+    cmds:
+      - helm package ./chart
+  deploy:
+    run: when_changed
+    deps: [chart]
+    sources:
+      - ./drift-0.1.0.tgz
+    cmds:
+      - helm upgrade --install --create-namespace dev -n dev ./drift-0.1.0.tgz

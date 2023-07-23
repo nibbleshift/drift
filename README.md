@@ -43,3 +43,13 @@ docker run -p6379:6379 --name drift-cache -d eqalpha/keydb
 ```
 docker run -p 8000:8000 -d casbin/casdoor-all-in-one
 ```
+
+# Install Helm
+```
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+# Install k3d
+```
+curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+```

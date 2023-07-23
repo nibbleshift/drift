@@ -1,41 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "drift.fullname" . }}
+  name: driftd
   labels:
-    {{- include "drift.labels" . | nindent 4 }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
-      {{- include "drift.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: driftd
+      app.kubernetes.io/instance: drift
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.driftd.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "drift.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: driftd
+        app.kubernetes.io/instance: drift
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.driftd.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "drift.serviceAccountName" . }}
+      serviceAccountName: driftd-sa
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.driftd.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- toYaml .Values.driftd.securityContext | nindent 12 }}
+          image: "{{ .Values.driftd.image.repository }}:{{ .Values.driftd.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.driftd.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.driftd.service.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -46,16 +46,16 @@ spec:
               path: /
               port: http
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
+            {{- toYaml .Values.driftd.resources | nindent 12 }}
+      {{- with .Values.driftd.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.driftd.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.driftd.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

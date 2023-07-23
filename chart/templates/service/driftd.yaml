@@ -1,15 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "drift.fullname" . }}
+  name: drift
   labels:
-    {{- include "drift.labels" . | nindent 4 }}
+    app.kubernetes.io/name: driftd
+    app.kubernetes.io/instance: drift
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.driftd.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.driftd.service.port }}
       targetPort: http
       protocol: TCP
       name: http
   selector:
-    {{- include "drift.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
