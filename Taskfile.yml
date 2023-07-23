@@ -58,13 +58,13 @@ tasks:
       - docker build -t drift/driftd -f Dockerfile.driftd .
   deploy:
     run: when_changed
-    deps: [chart]
+    deps: [chart,push]
     sources:
       - ./drift-0.1.0.tgz
+      - local.yaml
     cmds:
-      - helm upgrade --install --create-namespace dev -n dev ./drift-0.1.0.tgz
+      - helm upgrade --install --create-namespace dev -n dev ./drift-0.1.0.tgz --values local.yaml
   push:
-    deps: [docker]
     cmds:
       - docker tag drift/driftd drift-registry.localhost:5000/drift/driftd
       - docker push drift-registry.localhost:5000/drift/driftd

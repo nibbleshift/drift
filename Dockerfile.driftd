@@ -9,3 +9,5 @@ RUN go build -o driftd cmd/driftd/*.go
 FROM busybox:1.36.1-glibc
 WORKDIR /app
 COPY --from=build /build/driftd .
+
+CMD [ "/app/driftd" ]

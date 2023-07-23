@@ -1,41 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: driftd
+  name: ui
   labels:
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: driftd
+      app.kubernetes.io/name: drift-ui
       app.kubernetes.io/instance: drift
   template:
     metadata:
-      {{- with .Values.driftd.podAnnotations }}
+      {{- with .Values.ui.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app.kubernetes.io/name: driftd
+        app.kubernetes.io/name: drift-ui
         app.kubernetes.io/instance: drift
     spec:
-      {{- with .Values.driftd.imagePullSecrets }}
+      {{- with .Values.ui.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: driftd-sa
+      serviceAccountName: drift-ui-sa
       securityContext:
-        {{- toYaml .Values.driftd.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.ui.podSecurityContext | nindent 8 }}
       containers:
-        - name: driftd
+        - name: ui
           securityContext:
-            {{- toYaml .Values.driftd.securityContext | nindent 12 }}
-          image: "{{ .Values.driftd.image.repository }}:{{ .Values.driftd.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.driftd.image.pullPolicy }}
+            {{- toYaml .Values.ui.securityContext | nindent 12 }}
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.driftd.service.port }}
+              containerPort: {{ .Values.ui.service.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -46,16 +46,16 @@ spec:
               path: /
               port: http
           resources:
-            {{- toYaml .Values.driftd.resources | nindent 12 }}
-      {{- with .Values.driftd.nodeSelector }}
+            {{- toYaml .Values.ui.resources | nindent 12 }}
+      {{- with .Values.ui.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.driftd.affinity }}
+      {{- with .Values.ui.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.driftd.tolerations }}
+      {{- with .Values.ui.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -1,0 +1,28 @@
+driftd:
+  image:
+    repository: drift-registry:5000/drift/driftd
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    hosts:
+      - host: driftd.localhost
+        paths:
+          - path: /
+            pathType: Prefix
+ui:
+  image:
+    repository: drift-registry:5000/drift/drift-ui
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    hosts:
+      - host: drift.localhost
+        paths:
+          - path: /
+            pathType: Prefix

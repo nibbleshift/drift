@@ -1,0 +1,13 @@
+{{- if .Values.ui.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: drift-ui-sa
+  labels:
+    app.kubernetes.io/name: drift-ui
+    app.kubernetes.io/instance: drift
+  {{- with .Values.ui.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
