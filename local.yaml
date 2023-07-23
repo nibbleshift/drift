@@ -20,9 +20,15 @@ ui:
   ingress:
     enabled: true
     className: ""
-    annotations: {}
+    annotations:
+      ingress.kubernetes.io/ssl-redirect: "false"
     hosts:
       - host: drift.localhost
         paths:
           - path: /
             pathType: Prefix
+            backend:
+              service:
+                name: drift-ui
+                port:
+                  number: 80

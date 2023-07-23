@@ -70,3 +70,7 @@ tasks:
       - docker push drift-registry.localhost:5000/drift/driftd
       - docker tag drift/drift-ui drift-registry.localhost:5000/drift/drift-ui
       - docker push drift-registry.localhost:5000/drift/drift-ui
+  k3d:
+    cmds:
+      - k3d cluster create drift --registry-create drift-registry:0.0.0.0:5000 -p "80:80@loadbalancer"
+

@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: drift
+  name: drift-ui
   labels:
     app.kubernetes.io/name: drift-ui
     app.kubernetes.io/instance: drift
 spec:
   type: {{ .Values.ui.service.type }}
   ports:
-    - port: {{ .Values.ui.service.port }}
+    - port: 80
       targetPort: http
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: drift
+    app.kubernetes.io/name: drift-ui

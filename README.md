@@ -52,5 +52,5 @@ curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
 # Setup cluster
 ```
-k3d cluster create drift --registry-create drift-registry:0.0.0.0:5000
+k3d cluster create drift --registry-create drift-registry:0.0.0.0:5000 -p "80:80@loadbalancer"
 ```
