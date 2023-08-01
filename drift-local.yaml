@@ -1,7 +1,7 @@
 driftd:
   image:
     repository: drift-registry:5000/drift/driftd
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     tag: "latest"
   ingress:
     enabled: true
@@ -15,7 +15,7 @@ driftd:
 ui:
   image:
     repository: drift-registry:5000/drift/drift-ui
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     tag: "latest"
   ingress:
     enabled: true

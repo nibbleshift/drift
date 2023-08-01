@@ -28,13 +28,14 @@ func Open(databaseUrl string) *ent.Client {
 		log.Fatal(err)
 	}
 
+	log.Printf("Connect to database at %s\n", databaseUrl)
 	// Create an ent.Driver from `db`.
 	drv := entsql.OpenDB(dialect.Postgres, db)
 	return ent.NewClient(ent.Driver(drv))
 }
 
 func main() {
-	client := Open("postgresql://postgres:postgres@127.0.0.1/drift")
+	client := Open("postgresql://postgres:password@postgres-postgresql.dev.svc.cluster.local/drift?sslmode=disable")
 
 	port := os.Getenv("PORT")
 	if port == "" {

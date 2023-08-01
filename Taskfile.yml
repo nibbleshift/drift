@@ -69,7 +69,7 @@ tasks:
           --set single-node=true
           --set statefulset.replicas=1
       - helm upgrade --install --create-namespace auth -n auth zitadel/zitadel --values auth-local.yaml
-      - helm upgrade --install postgres --create-namespace -n dev bitnami/postgresql --version 12.7.3
+      - helm upgrade --install postgres --create-namespace -n dev bitnami/postgresql --values postgres-local.yaml
       - helm upgrade --install --create-namespace dev -n dev ./drift-0.1.0.tgz --values drift-local.yaml
   zitadel:
     cmds:
