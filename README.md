@@ -60,6 +60,9 @@ k3d cluster create drift --registry-create drift-registry:0.0.0.0:5000 -p "80:80
 helm repo add zitadel https://charts.zitadel.com
 helm repo add enapter https://enapter.github.io/charts/
 helm repo add cockroachdb https://charts.cockroachdb.com/
+helm repo add bitnami https://charts.bitnami.com/bitnami
 ```
+
+
 
 
